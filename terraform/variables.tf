@@ -23,7 +23,7 @@ variable "ssh_user" { default = "opc" }
 # variable "ssh_user" { default = "ubuntu" }
 
 
-variable "AD" { default = "3" }
+variable "AD" { default = "2" }
 
 variable "VPC-CIDR" { default = "10.0.0.0/16" }
 
@@ -31,12 +31,13 @@ variable "VPC-CIDR" { default = "10.0.0.0/16" }
 variable "InstanceImageOCID" {
     type = "map"
     default = {
+        // https://docs.cloud.oracle.com/iaas/images/image/96ad11d8-2a4f-4154-b128-4d4510756983/
         // See https://docs.us-phoenix-1.oraclecloud.com/images/ or https://docs.cloud.oracle.com/iaas/images/
         // Oracle-provided image "CentOS-7-2018.08.15-0"
-	eu-frankfurt-1 = "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaatz6zixwltzswnmzi2qxdjcab6nw47xne4tco34kn6hltzdppmada" 
-	us-ashburn-1 = "ocid1.image.oc1.iad.aaaaaaaah6ui3hcaq7d43esyrfmyqb3mwuzn4uoxjlbbdwoiicdmntlvwpda"
-	uk-london-1 = "ocid1.image.oc1.uk-london-1.aaaaaaaai3czrt22cbu5uytpci55rcy4mpi4j7wm46iy5wdieqkestxve4yq"
-	us-phoenix-1 = "ocid1.image.oc1.phx.aaaaaaaarbacra7juwrie5idcadtgbj3llxcu7p26rj4t3xujyqwwopy2wva"
+	eu-frankfurt-1 = "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaavsw2452x5psvj7lzp7opjcpj3yx7or4swwzl5vrdydxtfv33sbmqa" 
+	us-ashburn-1 = "ocid1.image.oc1.iad.aaaaaaaahhgvnnprjhfmzynecw2lqkwhztgibz5tcs3x4d5rxmbqcmesyqta"
+	uk-london-1 = "ocid1.image.oc1.uk-london-1.aaaaaaaa3iltzfhdk5m6f27wcuw4ttcfln54twkj66rsbn52yemg3gi5pkqa"
+	us-phoenix-1 = "ocid1.image.oc1.phx.aaaaaaaaa2ph5vy4u7vktmf3c6zemhlncxkomvay2afrbw5vouptfbydwmtq"
     }
 }
 
@@ -44,23 +45,34 @@ variable "InstanceImageOCID" {
 # Compute Instance counts
 # Bastion server count.  1 should be enough
 variable "bastion_server_count" { default = "1" }
-variable "lustre_oss_count" { default = "4" }
-variable "lustre_mds_count" { default = "1" }
-variable "lustre_client_count" { default = "1" }
+# bastion instance shape
+variable "bastion_server_shape" { default = "BM.HPC2.36" }
+
+# MDS server count
+variable "lustre_mds_count" { default = "2" }
+# MDS server shape
+variable "lustre_mds_server_shape" { default = "BM.HPC2.36" }
+# size in GiB for each MDT disk.
+variable "mdt_block_volume_size" { default = "50" }
+#eg: 2 block storage volume per MDS node.
+variable "lustre_mdt_count" { default = "2" }
+variable "enable_mdt_raid0" { default = "false" }
 
 
-# instance shapes
-variable "bastion_server_shape" { default = "VM.Standard2.1" }
-variable "lustre_oss_server_shape" { default = "VM.Standard2.1" }
-variable "lustre_mds_server_shape" { default = "VM.Standard2.1" }
-variable "lustre_client_shape" { default = "VM.Standard2.1" }
+# OSS server count. Should be 1 only
+variable "lustre_oss_count" { default = "2" }
+# OSS server shape
+variable "lustre_oss_server_shape" { default = "BM.HPC2.36" }
+# size in GiB for each OST disk.
+variable "ost_block_volume_size" { default = "50" }
+#eg: 4 block storage volume per OSS node.
+variable "lustre_ost_count" { default = "2" }
+variable "enable_ost_raid0" { default = "false" }
 
-variable "data_volume_size" { default = "50" }
-variable "lustre_ost_count" { default = "4" }
+# Lustre Client server count   
+variable "lustre_client_count" { default = "2" }
+# Lustre Client server shape
+variable "lustre_client_shape" { default = "BM.HPC2.36" }
 
 
-
-variable "instance_shape" {
-  default = "VM.Standard2.1"
-}
 

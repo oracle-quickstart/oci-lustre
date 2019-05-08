@@ -10,7 +10,7 @@ resource "oci_core_volume" "lustre_oss_blockvolume" {
   availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[var.AD - 1],"name")}"
   compartment_id      = "${var.compartment_ocid}"
   display_name        = "lustre-oss${(count.index%var.lustre_oss_count+1)}-vol${(count.index%var.lustre_ost_count+1)}"
-  size_in_gbs         = "${var.data_volume_size}"
+  size_in_gbs         = "${var.ost_block_volume_size}"
 }
 
 

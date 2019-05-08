@@ -86,46 +86,6 @@ resource "oci_core_instance" "lustre_client" {
 }
 
 
-###
-### Block Volumes for Master & Worker Nodes - used to store Tableau Data & extracts, etc. 
-###
-/*
-resource "oci_core_volume" "tableau_server_volume1" {
-  count="${var.tableau_server_count}"
-  availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[count.index%3],"name")}"
-  compartment_id = "${var.compartment_ocid}"
-  display_name = "Tableau Server ${format("%01d", count.index+1)} Volume 1"
-  size_in_gbs = "${var.data_volume_size}"
-}
-
-resource "oci_core_volume_attachment" "tableau_server_attachment1" {
-  count="${var.tableau_server_count}"
-  attachment_type = "iscsi"
-  compartment_id = "${var.compartment_ocid}"
-  instance_id = "${oci_core_instance.tableau_server.*.id[count.index]}"
-  volume_id = "${oci_core_volume.tableau_server_volume1.*.id[count.index]}"
-}
-
-
-
-resource "oci_core_volume" "tableau_worker_volume1" {
-  count="${var.tableau_worker_count}"
-  availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[(count.index%3)+1],"name")}"
-  compartment_id = "${var.compartment_ocid}"
-  display_name = "Tableau Worker ${format("%01d", count.index+1)} Volume 1"
-  size_in_gbs = "${var.data_volume_size}"
-}
-
-resource "oci_core_volume_attachment" "tableau_worker_attachment1" {
-  count="${var.tableau_worker_count}"
-  attachment_type = "iscsi"
-  compartment_id = "${var.compartment_ocid}"
-  instance_id = "${oci_core_instance.tableau_worker.*.id[count.index]}"
-  volume_id = "${oci_core_volume.tableau_worker_volume1.*.id[count.index]}"
-}
-*/
-
-
 
 /* bastion instances */
 
@@ -231,7 +191,7 @@ resource "null_resource" "lustre-mds-setup-after-kernel-update" {
         "echo about to run /tmp/nodes-cloud-init-complete-status-check.sh",
         "sudo -s bash -c 'set -x && chmod 777 /tmp/*.sh'",        
         "sudo -s bash -c 'set -x && /tmp/nodes-cloud-init-complete-status-check.sh'",
-        "sudo -s bash -c 'set -x && /tmp/mds_setup.sh'",
+        "sudo -s bash -c \"set -x && /tmp/mds_setup.sh ${var.enable_mdt_raid0} \"",
       ]
     }
 }
@@ -313,7 +273,7 @@ resource "null_resource" "lustre-oss-setup-after-kernel-update" {
         "echo about to run /tmp/nodes-cloud-init-complete-status-check.sh",
         "sudo -s bash -c 'set -x && chmod 777 /tmp/*.sh'",
         "sudo -s bash -c 'set -x && /tmp/nodes-cloud-init-complete-status-check.sh'",
-        "sudo -s bash -c 'set -x && /tmp/oss_setup.sh'",
+        "sudo -s bash -c \"set -x && /tmp/oss_setup.sh ${var.enable_ost_raid0} \"",
       ]
     }
 }
