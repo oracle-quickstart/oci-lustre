@@ -51,7 +51,7 @@ disk_type=bv
 fsname=lfsbv
 mount_point="/mnt/mdt_$disk_type"
 mkdir -p $mount_point
-mount -t lustre ${mds_ip}@tcp1:/$fsname $mount_point
+mount -t lustre -o flock ${mds_ip}@tcp1:/$fsname $mount_point
 if [ $? -eq 0 ]; then
   ## Update fstab
   cp /etc/fstab /etc/fstab.backup
