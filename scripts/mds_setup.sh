@@ -159,7 +159,8 @@ if [ $enable_mdt_raid0 = "true" -a $total_disk_count -gt 1 ]; then
   disk_mount
 fi
 
-
+# Performance tuning 
+lctl set_param -P obdfilter.*.readcache_max_filesize=2M
 
 service lustre status
 lctl list_nids
