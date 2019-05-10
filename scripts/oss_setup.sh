@@ -147,9 +147,6 @@ if [ $enable_ost_raid0 = "true" -a $total_disk_count -gt 1 ]; then
 fi
 
 
-# Performance tuning 
-lctl set_param obdfilter.*.readcache_max_filesize=2M
-
 service lustre status
 lctl list_nids
 nids=`lctl list_nids` | grep tcp1
