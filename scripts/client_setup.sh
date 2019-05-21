@@ -44,14 +44,14 @@ mount -t lustre ${mds_ip}@tcp1:/$fsname $mount_point
 if [ $? -eq 0 ]; then
   ## Update fstab
   cp /etc/fstab /etc/fstab.backup
-  echo "${mds_ip}@tcp1:/$fsname  $mount_point lustre defaults,_netdev,noauto,x-systemd.automount,x-systemd.requires=lnet.service 0 0" >> /etc/fstab
+  echo "${mds_ip}@tcp1:/$fsname  $mount_point lustre defaults,_netdev,x-systemd.automount,x-systemd.requires=lnet.service 0 0" >> /etc/fstab
 fi
 
 disk_type=bv
 fsname=lfsbv
 mount_point="/mnt/mdt_$disk_type"
 mkdir -p $mount_point
-mount -t lustre -o flock ${mds_ip}@tcp1:/$fsname $mount_point
+mount -t lustre  ${mds_ip}@tcp1:/$fsname $mount_point
 if [ $? -eq 0 ]; then
   ## Update fstab
   cp /etc/fstab /etc/fstab.backup
@@ -61,6 +61,10 @@ fi
 
 
 df -h 
+
+
+sudo chown -R opc:opc /mnt/mdt_*
+
 
 
 # Update lnet service to start with correct config and enable at boot time

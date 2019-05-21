@@ -49,28 +49,28 @@ variable "bastion_server_count" { default = "1" }
 variable "bastion_server_shape" { default = "BM.HPC2.36" }
 
 # MDS server count
-variable "lustre_mds_count" { default = "2" }
+variable "lustre_mds_count" { default = "1" }
 # MDS server shape
 variable "lustre_mds_server_shape" { default = "BM.HPC2.36" }
 # size in GiB for each MDT disk.
-variable "mdt_block_volume_size" { default = "50" }
+variable "mdt_block_volume_size" { default = "750" }
 #eg: 2 block storage volume per MDS node.
-variable "lustre_mdt_count" { default = "2" }
+variable "lustre_mdt_count" { default = "1" }
 variable "enable_mdt_raid0" { default = "false" }
 
 
 # OSS server count. Should be 1 only
-variable "lustre_oss_count" { default = "2" }
+variable "lustre_oss_count" { default = "3" }
 # OSS server shape
 variable "lustre_oss_server_shape" { default = "BM.HPC2.36" }
 # size in GiB for each OST disk.
-variable "ost_block_volume_size" { default = "50" }
+variable "ost_block_volume_size" { default = "750" }
 #eg: 4 block storage volume per OSS node.
-variable "lustre_ost_count" { default = "2" }
+variable "lustre_ost_count" { default = "8" }
 variable "enable_ost_raid0" { default = "false" }
 
 # Lustre Client server count   
-variable "lustre_client_count" { default = "2" }
+variable "lustre_client_count" { default = "4" }
 # Lustre Client server shape
 variable "lustre_client_shape" { default = "BM.HPC2.36" }
 
