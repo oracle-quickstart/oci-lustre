@@ -1,6 +1,8 @@
 #/bin/bash
 set -x 
 
+# ensure the change before reboot is effective (should be unlimited)
+ulimit -l 
 uname -a
 getenforce
 modprobe lnet

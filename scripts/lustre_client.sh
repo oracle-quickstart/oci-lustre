@@ -81,6 +81,14 @@ sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 
 setenforce 0
 
+# Needs a reboot for this to be effective
+echo "*          hard   memlock           unlimited
+*          soft    memlock           unlimited
+" >> /etc/security/limits.conf
+# test it after reboot using ulimit -l 
+
+
+
 touch /tmp/complete
 echo "complete."
 # reboot required to load kernal module : lnet (modprobe lnet) 
