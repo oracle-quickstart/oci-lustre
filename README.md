@@ -1,4 +1,4 @@
-# oci-quickstart-lustre
+# oci-lustre
 These are Terraform modules that deploy [Lustre](http://lustre.org/) on [Oracle Cloud Infrastructure (OCI)](https://cloud.oracle.com/en_US/cloud-infrastructure).
 
 ## High Level Architecture 
