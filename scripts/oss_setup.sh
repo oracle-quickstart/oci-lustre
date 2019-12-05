@@ -3,6 +3,8 @@
 set -x
 
 enable_ost_raid0=$1
+mgs_fqdn_hostname_nic0=$2
+mgs_fqdn_hostname_nic1=$3
 uname -a
 
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
@@ -10,32 +12,107 @@ getenforce
 modprobe lnet
 lnetctl lnet configure
 lctl list_nids
-nic_25gbps=false
-nic_100gbps=false
-# For compute instances having ethernet network bandwidth less than 25 gbps
-ifconfig | grep "ens3: "
 
-if [ $? -eq 0 ]; then
-  echo "true";
-  lnetctl net add --net tcp1 --if ens3
+nodeWith2NIC=0
+# BM.Standard and BM.DenseIO shapes have 2 NICs and their 2nd NIC are labeled as below: 
+ifconfig | grep "^eno3d1:\|^enp70s0f1d1:"
+  if [ $? -eq 0 ] ; then
+    echo "Shapes with 2 NIC setup, except hpc shapes"
+    nodeWith2NIC=1
+    ifconfig | grep "^enp70s0f1d1:"
+      if [ $? -eq 0 ] ; then
+        interface="enp70s0f1d1"
+      else
+        interface="eno3d1"
+      fi
+    else
+      ifconfig | grep "eno2: "
+      if [ $? -eq 0 ]; then
+        echo "Found HPC shape, using NIC with 25gbps network interface";
+        #nic_25gbps=true
+        interface="eno2"
+      else
+        # For compute instances having ethernet network bandwidth less than 25 gbps
+        ifconfig | grep "ens3: "
+        if [ $? -eq 0 ]; then
+           interface="ens3"
+        fi 
+      fi 
+    fi
+
+if [ $nodeWith2NIC -eq 1 ]; then 
+  ip route
+  ifconfig
+  route
+  ip addr
+
+      
+  # Wait till 2nd NIC is configured, since the Lustre cluster will use the 2nd NIC for cluster comm. 
+  privateIp=`curl -s http://169.254.169.254/opc/v1/vnics/ | jq '.[1].privateIp' | sed 's/"//g' ` ; echo $privateIp
+  while [ -z "$privateIp" -o $privateIp = "null" ];
+  do
+    sleep 10s
+    echo "Waiting for 2nd Physical NIC to get configured with hostname"
+    privateIp=`curl -s http://169.254.169.254/opc/v1/vnics/ | jq '.[1].privateIp' | sed 's/"//g' ` ; echo $privateIp
+  done
+  echo "Server nodes with 2 NICs - get hostname for 2nd NIC..."
+      
+
+      
+  privateIp=`curl -s http://169.254.169.254/opc/v1/vnics/ | jq '.[1].privateIp' | sed 's/"//g' ` ; echo $privateIp
+  macAddr=`curl -s http://169.254.169.254/opc/v1/vnics/ | jq '.[1].macAddr' | sed 's/"//g' ` ; echo $macAddr
+  subnetCidrBlock=`curl -s http://169.254.169.254/opc/v1/vnics/ | jq '.[1].subnetCidrBlock' | sed 's/"//g' ` ; echo $subnetCidrBlock
+  vnicId=`curl -s http://169.254.169.254/opc/v1/vnics/ | jq '.[1].vnicId' | sed 's/"//g' ` ; echo $vnicId
+
+
+  echo "$subnetCidrBlock via $privateIp dev $interface" >  /etc/sysconfig/network-scripts/route-$interface
+
+# MTU has to be 9000 for better performance
+echo "DEVICE=$interface
+HWADDR=$macAddr
+ONBOOT=yes
+TYPE=Ethernet
+USERCTL=no
+IPADDR=$privateIp
+NETMASK=255.255.255.0
+MTU=9000" > /etc/sysconfig/network-scripts/ifcfg-$interface
+
+  # make the change now
+  ip link set dev $interface mtu 9000
+
+  systemctl status network.service
+  # You might see some DHCP error, ignore it.  Its not impacting any functionality I know of.
+  systemctl restart network.service
+
+  ip route ; ifconfig ; route ; ip addr ;
+  SecondNicFQDNHostname=`nslookup $privateIp | grep "name = " | gawk -F"=" '{ print $2 }' | sed  "s|^ ||g" | sed  "s|\.$||g"`
+  THIS_FQDN=$SecondNicFQDNHostname
+  THIS_HOST=${THIS_FQDN%%.*}
+  SecondNICDomainName=${THIS_FQDN#*.*} 
+  echo $SecondNICDomainName
+  #primaryNICHostname="`hostname`"
+  #sed -i "s/^PRESERVE_HOSTINFO=0/PRESERVE_HOSTINFO=3/g" /etc/oci-hostname.conf  
+  #cat /etc/oci-hostname.conf
 else
-  # TODO - Add logic to use nic_100gbps RDMA first if its configured already.  Look for ethernet interface with name:  enp94s0f0.  
-  # This interface should be used instead of eno2, if its already setup for RMDA cluster
-  # For compute instances having nic_25gbps ethernet bandwidth speed 
-  ifconfig | grep "eno2: "
-  if [ $? -eq 0 ]; then
-    echo "Found nic_25gbps network interface";
-    nic_25gbps=true
-    lnetctl net add --net tcp1 --if eno2
-  else
-    echo "Expected network inferface missing, abort deployment";
-    exit 1;
-  fi
+  # Servers with only 1 physical NIC or HPC shapes
+  THIS_FQDN="`hostname --fqdn`"
+  THIS_HOST="${THIS_FQDN%%.*}" 
 fi
 
-#lnetctl net add --net tcp1 --if ens3
-mds_ip=`nslookup lustre-mds-server-1 | grep "Address: " | gawk '{ print $2 }'` ; echo $mds_ip
 
+
+lnetctl net add --net tcp1 --if $interface  –peer-timeout 180 –peer-credits 8 –credits 1024  
+
+#############
+
+
+
+mgs_ip=`nslookup ${mgs_fqdn_hostname_nic1} | grep "Address: " | gawk '{ print $2 }'` ; echo $mgs_ip
+if [ -z $mgs_ip ]; then
+   mgs_ip=`nslookup ${mgs_fqdn_hostname_nic0} | grep "Address: " | gawk '{ print $2 }'` ; echo $mgs_ip
+fi
+
+#mgs_ip=`nslookup lustre-mds-server-1 | grep "Address: " | gawk '{ print $2 }'` ; echo $mgs_ip
 
 disk_mount () {
 
@@ -70,7 +147,7 @@ else
   fsname=lfsbv
 fi 
 mount_point="/oss${num}_ost${index}_${disk_type}_mount"
-mkfs.lustre --ost --fsname=$fsname --index=$index --mgsnode=${mds_ip}@tcp1 $mount_device
+mkfs.lustre --ost --fsname=$fsname --index=$index --mgsnode=${mgs_ip}@tcp1 $mount_device
 #lctl network up
 #lctl list_nids
 mkdir -p $mount_point
@@ -157,11 +234,7 @@ df -h
 lnet_service_config="/usr/lib/systemd/system/lnet.service"
 cp $lnet_service_config $lnet_service_config.backup
 search_string="ExecStart=/usr/sbin/lnetctl import /etc/lnet.conf"
-if [ $nic_25gbps ]; then
-  nic_add="ExecStart=/usr/sbin/lnetctl net add --net tcp1 --if eno2"
-else
-  nic_add="ExecStart=/usr/sbin/lnetctl net add --net tcp1 --if ens3"
-fi
+nic_add="ExecStart=/usr/sbin/lnetctl net add --net tcp1 --if $interface  –peer-timeout 180 –peer-credits 8 –credits 1024 "
 sed -i "s|$search_string|#$search_string\n$nic_add|g" $lnet_service_config
 # To comment ConditionPathExists clause
 sed -i "s|ConditionPathExists=!/proc/sys/lnet/|#ConditionPathExists=!/proc/sys/lnet/|g" $lnet_service_config

@@ -1,6 +1,11 @@
 #/bin/bash
 set -x 
 
+mgs_fqdn_hostname_nic0=$1
+mgs_fqdn_hostname_nic1=$2
+sas_workload=$3
+
+
 # ensure the change before reboot is effective (should be unlimited)
 ulimit -l 
 uname -a
@@ -15,7 +20,7 @@ ifconfig | grep "ens3: "
 
 if [ $? -eq 0 ]; then
   echo "true";
-  lnetctl net add --net tcp1 --if ens3
+  interface="ens3"
 else
   # TODO - Add logic to use nic_100gbps RDMA first if its configured already.  Look for ethernet interface with name:  enp94s0f0.  
   # This interface should be used instead of eno2, if its already setup for RMDA cluster
@@ -24,40 +29,50 @@ else
   if [ $? -eq 0 ]; then
     echo "Found nic_25gbps network interface";
     nic_25gbps=true
-    lnetctl net add --net tcp1 --if eno2
+    interface="eno2"
   else
     echo "Expected network inferface missing, abort deployment";
     exit 1;
   fi
 fi
-#lnetctl net add --net tcp1 --if ens3
+lnetctl net add --net tcp1 --if $interface  –peer-timeout 180 –peer-credits 8 –credits 1024 
 
 lnetctl net show --net tcp > tcp.yaml
 lnetctl  import --del tcp.yaml
 lctl list_nids
 
 
-mds_ip=`nslookup lustre-mds-server-1 | grep "Address: " | gawk '{ print $2 }'` ; echo $mds_ip
+mgs_ip=`nslookup ${mgs_fqdn_hostname_nic1} | grep "Address: " | gawk '{ print $2 }'` ; echo $mgs_ip
+if [ -z $mgs_ip ]; then
+   mgs_ip=`nslookup ${mgs_fqdn_hostname_nic0} | grep "Address: " | gawk '{ print $2 }'` ; echo $mgs_ip
+fi
+
+#mds_ip=`nslookup lustre-mds-server-1 | grep "Address: " | gawk '{ print $2 }'` ; echo $mds_ip
 disk_type=nvme
 fsname=lfsnvme
 mount_point="/mnt/mdt_$disk_type"
 mkdir -p $mount_point
-mount -t lustre ${mds_ip}@tcp1:/$fsname $mount_point
+# -o flock recommended for SAS workloads. 
+#if [ $sas_workload -eq 1 ]; then 
+#  mount_options=" -o flock "
+#fi
+ 
+mount -t lustre -o flock ${mgs_ip}@tcp1:/$fsname $mount_point
 if [ $? -eq 0 ]; then
   ## Update fstab
   cp /etc/fstab /etc/fstab.backup
-  echo "${mds_ip}@tcp1:/$fsname  $mount_point lustre defaults,_netdev,x-systemd.automount,x-systemd.requires=lnet.service 0 0" >> /etc/fstab
+  echo "${mgs_ip}@tcp1:/$fsname  $mount_point lustre defaults,_netdev,flock,x-systemd.automount,x-systemd.requires=lnet.service 0 0" >> /etc/fstab
 fi
 
 disk_type=bv
 fsname=lfsbv
 mount_point="/mnt/mdt_$disk_type"
 mkdir -p $mount_point
-mount -t lustre  ${mds_ip}@tcp1:/$fsname $mount_point
+mount -t lustre -o flock ${mgs_ip}@tcp1:/$fsname $mount_point
 if [ $? -eq 0 ]; then
   ## Update fstab
   cp /etc/fstab /etc/fstab.backup
-  echo "${mds_ip}@tcp1:/$fsname  $mount_point lustre defaults,_netdev,x-systemd.automount,x-systemd.requires=lnet.service 0 0" >> /etc/fstab
+  echo "${mgs_ip}@tcp1:/$fsname  $mount_point lustre defaults,_netdev,flock,x-systemd.automount,x-systemd.requires=lnet.service 0 0" >> /etc/fstab
 fi
 
 
@@ -73,10 +88,13 @@ sudo chown -R opc:opc /mnt/mdt_*
 lnet_service_config="/usr/lib/systemd/system/lnet.service"
 cp $lnet_service_config $lnet_service_config.backup
 search_string="ExecStart=/usr/sbin/lnetctl import /etc/lnet.conf"
-if [ $nic_25gbps ]; then
-  nic_add="ExecStart=/usr/sbin/lnetctl net add --net tcp1 --if eno2"
-else
-  nic_add="ExecStart=/usr/sbin/lnetctl net add --net tcp1 --if ens3"
+
+nic_add="ExecStart=/usr/sbin/lnetctl net add --net tcp1 --if $interface  –peer-timeout 180 –peer-credits 8 –credits 1024 "
+#if [ $nic_25gbps ]; then
+#  nic_add="ExecStart=/usr/sbin/lnetctl net add --net tcp1 --if eno2  –peer-timeout 180 –peer-credits 8 –credits 1024 "
+#else
+#  nic_add="ExecStart=/usr/sbin/lnetctl net add --net tcp1 --if ens3  –peer-timeout 180 –peer-credits 8 –credits 1024 "
+#
 fi
 sed -i "s|$search_string|#$search_string\n$nic_add|g" $lnet_service_config
 # To comment ConditionPathExists clause
