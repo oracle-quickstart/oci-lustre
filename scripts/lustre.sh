@@ -1,4 +1,4 @@
-#!/bin/bash
+# #!/bin/bash
 ## cloud-init bootstrap script
 
 set -x 
@@ -8,7 +8,7 @@ systemctl stop sshd
 
 
 THIS_FQDN=`hostname --fqdn`
-THIS_HOST=$${THIS_FQDN%%.*}
+THIS_HOST=${THIS_FQDN%%.*}
 
 #######################################################"
 ################# Turn Off the Firewall ###############"
@@ -33,15 +33,18 @@ else
     chkconfig firewalld off
 fi
 
-#######################################################"
 #################   Update resolv.conf  ###############"
 #######################################################"
 ## Modify resolv.conf to ensure DNS lookups work from one private subnet to another subnet
-#cp /etc/resolv.conf /etc/resolv.conf.backup
-#rm -f /etc/resolv.conf
-#echo "search ${PrivateSubnetsFQDN}" > /etc/resolv.conf
-#echo "nameserver 169.254.169.254" >> /etc/resolv.conf
+cp /etc/resolv.conf /etc/resolv.conf.backup
+rm -f /etc/resolv.conf
 
+# echo "search ${PrivateBSubnetsFQDN} ${PrivateSubnetsFQDN} " > /etc/resolv.conf
+echo "search ${PublicBSubnetsFQDN} ${PublicSubnetsFQDN} " > /etc/resolv.conf
+echo "nameserver 169.254.169.254" >> /etc/resolv.conf
+
+
+#######################################################"
 #######################################################"
 
 
@@ -59,7 +62,7 @@ fi
 cat > /etc/yum.repos.d/lustre.repo << EOF
 [hpddLustreserver]
 name=CentOS- - Lustre
-baseurl=https://downloads.whamcloud.com/public/lustre/latest-release/el7.6.1810/server/
+baseurl=https://downloads.whamcloud.com/public/lustre/latest-release/el7/server/
 gpgcheck=0
 
 [e2fsprogs]
@@ -69,11 +72,16 @@ gpgcheck=0
 
 [hpddLustreclient]
 name=CentOS- - Lustre
-baseurl=https://downloads.whamcloud.com/public/lustre/latest-release/el7.6.1810/client/
+baseurl=https://downloads.whamcloud.com/public/lustre/latest-release/el7/client/
 gpgcheck=0
 EOF
 
 sudo yum install lustre-tests -y
+if [ $? -ne 0 ]; then
+  echo "yum install of lustre binaries failed"
+  exit 1
+fi
+
 
 cp /etc/selinux/config /etc/selinux/config.backup
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config

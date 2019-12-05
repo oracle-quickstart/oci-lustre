@@ -8,7 +8,7 @@ systemctl stop sshd
 
 
 THIS_FQDN=`hostname --fqdn`
-THIS_HOST=$${THIS_FQDN%%.*}
+THIS_HOST=${THIS_FQDN%%.*}
 
 #######################################################"
 ################# Turn Off the Firewall ###############"
@@ -57,7 +57,7 @@ fi
 cat > /etc/yum.repos.d/lustre.repo << EOF
 [hpddLustreserver]
 name=CentOS- - Lustre
-baseurl=https://downloads.whamcloud.com/public/lustre/latest-release/el7.6.1810/server/
+baseurl=https://downloads.whamcloud.com/public/lustre/latest-release/el7/server/
 gpgcheck=0
 
 [e2fsprogs]
@@ -67,7 +67,7 @@ gpgcheck=0
 
 [hpddLustreclient]
 name=CentOS- - Lustre
-baseurl=https://downloads.whamcloud.com/public/lustre/latest-release/el7.6.1810/client/
+baseurl=https://downloads.whamcloud.com/public/lustre/latest-release/el7/client/
 gpgcheck=0
 EOF
 
@@ -75,6 +75,12 @@ EOF
 
 # Only client should be installed
 yum  install  lustre-client  -y
+if [ $? -ne 0 ]; then
+  echo "yum install of lustre binaries failed"
+  exit 1
+fi
+
+
 
 cp /etc/selinux/config /etc/selinux/config.backup
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config

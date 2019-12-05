@@ -1,6 +1,6 @@
 # Gets a list of Availability Domains
 data "oci_identity_availability_domains" "ADs" {
-  compartment_id = "${var.tenancy_ocid}"
+  compartment_id = var.tenancy_ocid
 }
 
 /*
@@ -55,4 +55,3 @@ data "oci_core_vnic_attachments" "bastion_vnics" {
   instance_id         = "${oci_core_instance.bastion.*.id[0]}"
 }
 */
-
