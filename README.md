@@ -2,7 +2,7 @@
 These are Terraform modules that deploy [Lustre](http://lustre.org/) on [Oracle Cloud Infrastructure (OCI)](https://cloud.oracle.com/en_US/cloud-infrastructure).
 
 ## High Level Architecture 
-![](./images/Lustre_OCI_High_Level_Arch.png)
+![](./images/Lustre_OCI_High_Level_Arch.jpeg)
 
 ## Prerequisites
 First off you'll need to do some pre deploy setup.  That's all detailed [here](https://github.com/oracle/oci-quickstart-prerequisites).
