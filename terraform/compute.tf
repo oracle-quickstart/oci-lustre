@@ -27,13 +27,8 @@ resource "oci_core_instance" "lustre_mds" {
           "#!/usr/bin/env bash",
           "mgs_hostname_prefix_nic0=${var.mgs["hostname_prefix_nic0"]}",
           "mgs_hostname_prefix_nic1=${var.mgs["hostname_prefix_nic1"]}",
-<<<<<<< HEAD
           "PublicSubnetsFQDN=\"${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com ${oci_core_subnet.public[0].dns_label}.${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com\"",
           "PublicBSubnetsFQDN=\"${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com ${oci_core_subnet.publicb[0].dns_label}.${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com\"",
-=======
-          "PublicSubnetsFQDN=\"${oci_core_virtual_network.sas_vcn.dns_label}.oraclevcn.com ${oci_core_subnet.public[0].dns_label}.${oci_core_virtual_network.sas_vcn.dns_label}.oraclevcn.com\"",
-          "PublicBSubnetsFQDN=\"${oci_core_virtual_network.sas_vcn.dns_label}.oraclevcn.com ${oci_core_subnet.publicb[0].dns_label}.${oci_core_virtual_network.sas_vcn.dns_label}.oraclevcn.com\"",
->>>>>>> 7dcc85c22cc793cc0d8f0481f827a955f5537c61
           file("../scripts/lustre_mds.sh"),
         ],
       ),
@@ -76,13 +71,8 @@ resource "oci_core_instance" "lustre_oss" {
           "#!/usr/bin/env bash",
           "mgs_hostname_prefix_nic0=${var.mgs["hostname_prefix_nic0"]}",
           "mgs_hostname_prefix_nic1=${var.mgs["hostname_prefix_nic1"]}",
-<<<<<<< HEAD
           "PublicSubnetsFQDN=\"${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com ${oci_core_subnet.public[0].dns_label}.${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com\"",
           "PublicBSubnetsFQDN=\"${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com ${oci_core_subnet.publicb[0].dns_label}.${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com\"",
-=======
-          "PublicSubnetsFQDN=\"${oci_core_virtual_network.sas_vcn.dns_label}.oraclevcn.com ${oci_core_subnet.public[0].dns_label}.${oci_core_virtual_network.sas_vcn.dns_label}.oraclevcn.com\"",
-          "PublicBSubnetsFQDN=\"${oci_core_virtual_network.sas_vcn.dns_label}.oraclevcn.com ${oci_core_subnet.publicb[0].dns_label}.${oci_core_virtual_network.sas_vcn.dns_label}.oraclevcn.com\"",
->>>>>>> 7dcc85c22cc793cc0d8f0481f827a955f5537c61
           file("../scripts/lustre.sh"),
         ],
       ),
@@ -177,52 +167,11 @@ resource "null_resource" "lustre-mds-setup-after-kernel-update" {
       bastion_port        = "22"
       bastion_user        = var.ssh_user
       bastion_private_key = var.ssh_private_key
-<<<<<<< HEAD
-=======
-    }
-  }
-/*
-  provisioner "file" {
-    source      = "../scripts/nodes-cloud-init-complete-status-check.sh"
-    destination = "/tmp/nodes-cloud-init-complete-status-check.sh"
-    connection {
-      agent               = false
-      timeout             = "30m"
-      host                = element(oci_core_instance.lustre_mds.*.private_ip, count.index)
-      user                = var.ssh_user
-      private_key         = var.ssh_private_key
-      bastion_host        = oci_core_instance.bastion[0].public_ip
-      bastion_port        = "22"
-      bastion_user        = var.ssh_user
-      bastion_private_key = var.ssh_private_key
->>>>>>> 7dcc85c22cc793cc0d8f0481f827a955f5537c61
     }
   }
 
   provisioner "file" {
-<<<<<<< HEAD
-    source      = "../scripts/"
-    destination = "/tmp/"
-=======
-    source      = "../scripts/mds_setup.sh"
-    destination = "/tmp/mds_setup.sh"
->>>>>>> 7dcc85c22cc793cc0d8f0481f827a955f5537c61
-    connection {
-      agent               = false
-      timeout             = "30m"
-      host                = element(oci_core_instance.lustre_mds.*.private_ip, count.index)
-      user                = var.ssh_user
-      private_key         = var.ssh_private_key
-      bastion_host        = oci_core_instance.bastion[0].public_ip
-      bastion_port        = "22"
-      bastion_user        = var.ssh_user
-      bastion_private_key = var.ssh_private_key
-    }
-  }
-<<<<<<< HEAD
-=======
-*/
-  provisioner "file" {
+
     source      = "../scripts/"
     destination = "/tmp/"
     connection {
@@ -237,7 +186,6 @@ resource "null_resource" "lustre-mds-setup-after-kernel-update" {
       bastion_private_key = var.ssh_private_key
     }
   }
->>>>>>> 7dcc85c22cc793cc0d8f0481f827a955f5537c61
 
   provisioner "remote-exec" {
     connection {
@@ -259,11 +207,7 @@ resource "null_resource" "lustre-mds-setup-after-kernel-update" {
       "sudo -s bash -c 'set -x && /tmp/os_perf_tuning.sh'",
       "sudo -s bash -c 'set -x && /tmp/kernel_parameters_tuning.sh'",
       "sudo -s bash -c 'set -x && /tmp/nic_tuning.sh'",
-<<<<<<< HEAD
       "sudo -s bash -c \"set -x && /tmp/mds_setup.sh ${var.enable_mdt_raid0} ${var.mgs["hostname_nic0"]}.${oci_core_subnet.public[0].dns_label}.${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com ${var.mgs["hostname_nic1"]}.${oci_core_subnet.publicb[0].dns_label}.${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com \"",
-=======
-      "sudo -s bash -c \"set -x && /tmp/mds_setup.sh ${var.enable_mdt_raid0} ${var.mgs["hostname_nic0"]}.${oci_core_subnet.public[0].dns_label}.${oci_core_virtual_network.sas_vcn.dns_label}.oraclevcn.com ${var.mgs["hostname_nic1"]}.${oci_core_subnet.publicb[0].dns_label}.${oci_core_virtual_network.sas_vcn.dns_label}.oraclevcn.com \"",
->>>>>>> 7dcc85c22cc793cc0d8f0481f827a955f5537c61
       "sudo -s bash -c 'set -x && /tmp/lustre_all_tuning.sh'",
       "sudo -s bash -c 'set -x && /tmp/lustre_server_tuning.sh'",
     ]
@@ -298,19 +242,11 @@ resource "null_resource" "lustre-oss-setup-after-kernel-update" {
       bastion_port        = "22"
       bastion_user        = var.ssh_user
       bastion_private_key = var.ssh_private_key
-<<<<<<< HEAD
     }
   }
   provisioner "file" {
     source      = "../scripts/"
     destination = "/tmp/"
-=======
-    }
-  }
-/*
-  provisioner "file" {
-    source      = "../scripts/nodes-cloud-init-complete-status-check.sh"
-    destination = "/tmp/nodes-cloud-init-complete-status-check.sh"
     connection {
       agent               = false
       timeout             = "30m"
@@ -323,42 +259,6 @@ resource "null_resource" "lustre-oss-setup-after-kernel-update" {
       bastion_private_key = var.ssh_private_key
     }
   }
-
-  provisioner "file" {
-    source      = "../scripts/oss_setup.sh"
-    destination = "/tmp/oss_setup.sh"
->>>>>>> 7dcc85c22cc793cc0d8f0481f827a955f5537c61
-    connection {
-      agent               = false
-      timeout             = "30m"
-      host                = element(oci_core_instance.lustre_oss.*.private_ip, count.index)
-      user                = var.ssh_user
-      private_key         = var.ssh_private_key
-      bastion_host        = oci_core_instance.bastion[0].public_ip
-      bastion_port        = "22"
-      bastion_user        = var.ssh_user
-      bastion_private_key = var.ssh_private_key
-    }
-  }
-<<<<<<< HEAD
-=======
-*/
-  provisioner "file" {
-    source      = "../scripts/"
-    destination = "/tmp/"
-    connection {
-      agent               = false
-      timeout             = "30m"
-      host                = element(oci_core_instance.lustre_oss.*.private_ip, count.index)
-      user                = var.ssh_user
-      private_key         = var.ssh_private_key
-      bastion_host        = oci_core_instance.bastion[0].public_ip
-      bastion_port        = "22"
-      bastion_user        = var.ssh_user
-      bastion_private_key = var.ssh_private_key
-    }
-  }
->>>>>>> 7dcc85c22cc793cc0d8f0481f827a955f5537c61
 
   provisioner "remote-exec" {
     connection {
@@ -380,11 +280,7 @@ resource "null_resource" "lustre-oss-setup-after-kernel-update" {
       "sudo -s bash -c 'set -x && /tmp/os_perf_tuning.sh'",
       "sudo -s bash -c 'set -x && /tmp/kernel_parameters_tuning.sh'",
       "sudo -s bash -c 'set -x && /tmp/nic_tuning.sh'",
-<<<<<<< HEAD
       "sudo -s bash -c \"set -x && /tmp/oss_setup.sh ${var.enable_ost_raid0}  ${var.mgs["hostname_nic0"]}.${oci_core_subnet.public[0].dns_label}.${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com ${var.mgs["hostname_nic1"]}.${oci_core_subnet.publicb[0].dns_label}.${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com \"",
-=======
-      "sudo -s bash -c \"set -x && /tmp/oss_setup.sh ${var.enable_ost_raid0}  ${var.mgs["hostname_nic0"]}.${oci_core_subnet.public[0].dns_label}.${oci_core_virtual_network.sas_vcn.dns_label}.oraclevcn.com ${var.mgs["hostname_nic1"]}.${oci_core_subnet.publicb[0].dns_label}.${oci_core_virtual_network.sas_vcn.dns_label}.oraclevcn.com \"",
->>>>>>> 7dcc85c22cc793cc0d8f0481f827a955f5537c61
       "sudo -s bash -c 'set -x && /tmp/lustre_all_tuning.sh'",
       "sudo -s bash -c 'set -x && /tmp/lustre_server_tuning.sh'",
       "sudo -s bash -c 'set -x && /tmp/lustre_oss_tuning.sh'",
@@ -419,52 +315,10 @@ resource "null_resource" "lustre-client-setup-after-kernel-update" {
       bastion_port        = "22"
       bastion_user        = var.ssh_user
       bastion_private_key = var.ssh_private_key
-<<<<<<< HEAD
-=======
-    }
-  }
-/*
-  provisioner "file" {
-    source      = "../scripts/nodes-cloud-init-complete-status-check.sh"
-    destination = "/tmp/nodes-cloud-init-complete-status-check.sh"
-    connection {
-      agent               = false
-      timeout             = "30m"
-      host                = element(oci_core_instance.lustre_client.*.private_ip, count.index)
-      user                = var.ssh_user
-      private_key         = var.ssh_private_key
-      bastion_host        = oci_core_instance.bastion[0].public_ip
-      bastion_port        = "22"
-      bastion_user        = var.ssh_user
-      bastion_private_key = var.ssh_private_key
->>>>>>> 7dcc85c22cc793cc0d8f0481f827a955f5537c61
     }
   }
 
   provisioner "file" {
-<<<<<<< HEAD
-    source      = "../scripts/"
-    destination = "/tmp/"
-=======
-    source      = "../scripts/client_setup.sh"
-    destination = "/tmp/client_setup.sh"
->>>>>>> 7dcc85c22cc793cc0d8f0481f827a955f5537c61
-    connection {
-      agent               = false
-      timeout             = "30m"
-      host                = element(oci_core_instance.lustre_client.*.private_ip, count.index)
-      user                = var.ssh_user
-      private_key         = var.ssh_private_key
-      bastion_host        = oci_core_instance.bastion[0].public_ip
-      bastion_port        = "22"
-      bastion_user        = var.ssh_user
-      bastion_private_key = var.ssh_private_key
-    }
-  }
-<<<<<<< HEAD
-=======
-*/
-  provisioner "file" {
     source      = "../scripts/"
     destination = "/tmp/"
     connection {
@@ -479,7 +333,6 @@ resource "null_resource" "lustre-client-setup-after-kernel-update" {
       bastion_private_key = var.ssh_private_key
     }
   }
->>>>>>> 7dcc85c22cc793cc0d8f0481f827a955f5537c61
 
   provisioner "remote-exec" {
     connection {
@@ -501,11 +354,7 @@ resource "null_resource" "lustre-client-setup-after-kernel-update" {
       "sudo -s bash -c 'set -x && /tmp/os_perf_tuning.sh'",
       "sudo -s bash -c 'set -x && /tmp/kernel_parameters_tuning.sh'",
       "sudo -s bash -c 'set -x && /tmp/nic_tuning.sh'",
-<<<<<<< HEAD
       "sudo -s bash -c \"set -x && /tmp/client_setup.sh  ${var.mgs["hostname_nic0"]}.${oci_core_subnet.public[0].dns_label}.${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com ${var.mgs["hostname_nic1"]}.${oci_core_subnet.publicb[0].dns_label}.${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com  \"",
-=======
-      "sudo -s bash -c \"set -x && /tmp/client_setup.sh  ${var.mgs["hostname_nic0"]}.${oci_core_subnet.public[0].dns_label}.${oci_core_virtual_network.sas_vcn.dns_label}.oraclevcn.com ${var.mgs["hostname_nic1"]}.${oci_core_subnet.publicb[0].dns_label}.${oci_core_virtual_network.sas_vcn.dns_label}.oraclevcn.com  \"",
->>>>>>> 7dcc85c22cc793cc0d8f0481f827a955f5537c61
       "sudo -s bash -c 'set -x && /tmp/lustre_all_tuning.sh'",
       "sudo -s bash -c 'set -x && /tmp/lustre_client_tuning.sh'",
     ]

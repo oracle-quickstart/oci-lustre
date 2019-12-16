@@ -14,7 +14,7 @@ echo "63" > /sys/module/ksocklnd/parameters/peer_credits
 echo "2560" > /sys/module/ksocklnd/parameters/credits
 echo "100" > /sys/module/ksocklnd/parameters/sock_timeout
 
-<<<<<<< HEAD
+
 # Server , incl MDS
 echo "options ksocklnd nscheds=10 sock_timeout=100 credits=2560 peer_credits=63 enable_irq_affinity=0"  >  /etc/modprobe.d/ksocklnd.conf
 
@@ -44,5 +44,4 @@ options ksocklnd tx_buffer_size=0
 options ksocklnd rx_buffer_size=65536
 ■/etc/modprobe.d/ksocklnd.conf Server Side
 options ksocklnd peer_credits=32
-=======
->>>>>>> 7dcc85c22cc793cc0d8f0481f827a955f5537c61
+

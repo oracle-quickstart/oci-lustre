@@ -42,10 +42,6 @@ rm -f /etc/resolv.conf
 # echo "search ${PrivateBSubnetsFQDN} ${PrivateSubnetsFQDN} " > /etc/resolv.conf
 echo "search ${PublicBSubnetsFQDN} ${PublicSubnetsFQDN} " > /etc/resolv.conf
 echo "nameserver 169.254.169.254" >> /etc/resolv.conf
-<<<<<<< HEAD
-=======
-
->>>>>>> 7dcc85c22cc793cc0d8f0481f827a955f5537c61
 
 
 #######################################################"
