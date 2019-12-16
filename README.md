@@ -1,8 +1,8 @@
-# oci-quickstart-lustre
+# oci-lustre
 These are Terraform modules that deploy [Lustre](http://lustre.org/) on [Oracle Cloud Infrastructure (OCI)](https://cloud.oracle.com/en_US/cloud-infrastructure).
 
 ## High Level Architecture 
-![](./images/Lustre_OCI_High_Level_Arch.png)
+![](./images/Lustre_OCI_High_Level_Arch.jpeg)
 
 ## Prerequisites
 First off you'll need to do some pre deploy setup.  That's all detailed [here](https://github.com/oracle/oci-quickstart-prerequisites).
@@ -10,8 +10,8 @@ First off you'll need to do some pre deploy setup.  That's all detailed [here](h
 ## Clone the Terraform template
 Now, you'll want a local copy of this repo.  You can make that with the commands:
 
-    git clone https://github.com/oracle/oci-quickstart-lustre.git
-    cd oci-quickstart-lustre/terraform
+    git clone https://github.com/oracle-quickstart/oci-lustre.git
+    cd oci-lustre/terraform
     ls
 
 ## Update variables.tf file (optional)
@@ -20,7 +20,6 @@ This is optional, but you can update the variables.tf to change compute shapes, 
 ## Deployment and Post Deployment
 Deploy using standard Terraform commands
 
-        cd terraform
         terraform init
         terraform plan
         terraform apply
