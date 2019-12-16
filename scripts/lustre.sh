@@ -42,8 +42,13 @@ rm -f /etc/resolv.conf
 # echo "search ${PrivateBSubnetsFQDN} ${PrivateSubnetsFQDN} " > /etc/resolv.conf
 echo "search ${PublicBSubnetsFQDN} ${PublicSubnetsFQDN} " > /etc/resolv.conf
 echo "nameserver 169.254.169.254" >> /etc/resolv.conf
+<<<<<<< HEAD
+=======
+
+>>>>>>> 7dcc85c22cc793cc0d8f0481f827a955f5537c61
 
 
+#######################################################"
 #######################################################"
 #######################################################"
 
@@ -87,6 +92,9 @@ cp /etc/selinux/config /etc/selinux/config.backup
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 
 setenforce 0
+
+echo "options ksocklnd nscheds=10 sock_timeout=100 credits=2560 peer_credits=63 enable_irq_affinity=0"  >  /etc/modprobe.d/ksocklnd.conf
+
 
 touch /tmp/complete
 

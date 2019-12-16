@@ -44,3 +44,14 @@ tuned-adm profile sas-performance
 tuned-adm active
 
 cd -
+<<<<<<< HEAD
+
+# Values to try as per homeri page -  https://homerl.github.io/2016/04/06/Lustre-operations/
+#vm.dirty_ratio = 10 #default 20
+#vm.dirty_background_ratio = 5 #default 10
+#vm.vfs_cache_pressure = 50 #default 100
+
+#The default of 100 or relative "fair" is appropriate for compute servers. Set to lower than 100 for file servers on which the cache should be a priority. Set higher, maybe 500 to 1000, for interactive systems. Decreasing vfs_cache_pressure causes the kernel to prefer to retain dentry and inode caches
+
+=======
+>>>>>>> 7dcc85c22cc793cc0d8f0481f827a955f5537c61

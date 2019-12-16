@@ -101,6 +101,9 @@ sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 
 setenforce 0
 
+echo "options ksocklnd nscheds=10 sock_timeout=100 credits=2560 peer_credits=63 enable_irq_affinity=0"  >  /etc/modprobe.d/ksocklnd.conf
+
+
 touch /tmp/complete
 echo "complete.  rebooting now"
 reboot 

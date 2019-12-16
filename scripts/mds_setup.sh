@@ -101,7 +101,11 @@ fi
 
 
 
+<<<<<<< HEAD
+lnetctl net add --net tcp1 --if $interface –peer-timeout 180 –peer-credits 128 –credits 1024
+=======
 lnetctl net add --net tcp1 --if $interface –peer-timeout 180 –peer-credits 8 –credits 1024 
+>>>>>>> 7dcc85c22cc793cc0d8f0481f827a955f5537c61
 
 
 
@@ -110,6 +114,7 @@ lnetctl net add --net tcp1 --if $interface –peer-timeout 180 –peer-credits 8
 
 
 disk_mount () {
+cp /etc/mdadm.conf /etc/mdadm.conf.backup
 if [ $enable_mdt_raid0 = "true" ]; then
   echo -e "Create stripe RAID of $dcount $disk_type disk ."
   mount_device="/dev/md/md_$disk_type"
@@ -128,7 +133,7 @@ if [ $enable_mdt_raid0 = "true" ]; then
 #    raid_level="raid0"
 #  fi
   echo -e "RAID level of $raid_level for $dcount $disk_type disk ."
-  echo "DEVICE $device_list" >  /etc/mdadm.conf
+  echo "DEVICE $device_list" >>  /etc/mdadm.conf
   echo "ARRAY ${mount_device} devices=$device_list" >> /etc/mdadm.conf
   mdadm -C ${mount_device} --level=$raid_level --raid-devices=$dcount $device_list 
 
@@ -255,7 +260,11 @@ df -h
 lnet_service_config="/usr/lib/systemd/system/lnet.service"
 cp $lnet_service_config $lnet_service_config.backup
 search_string="ExecStart=/usr/sbin/lnetctl import /etc/lnet.conf"
+<<<<<<< HEAD
+nic_add="ExecStart=/usr/sbin/lnetctl net add --net tcp1 --if $interface  –peer-timeout 180 –peer-credits 128 –credits 1024"
+=======
 nic_add="ExecStart=/usr/sbin/lnetctl net add --net tcp1 --if $interface  –peer-timeout 180 –peer-credits 8 –credits 1024 "
+>>>>>>> 7dcc85c22cc793cc0d8f0481f827a955f5537c61
 sed -i "s|$search_string|#$search_string\n$nic_add|g" $lnet_service_config
 # To comment ConditionPathExists clause
 sed -i "s|ConditionPathExists=!/proc/sys/lnet/|#ConditionPathExists=!/proc/sys/lnet/|g" $lnet_service_config

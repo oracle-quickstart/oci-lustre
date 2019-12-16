@@ -36,7 +36,10 @@ echo "net.ipv4.tcp_low_latency=1" >> /etc/sysctl.conf
 
 echo "net.ipv4.tcp_rmem = 212992 87380 16777216" >> /etc/sysctl.conf
 echo "net.ipv4.tcp_sack = 1" >> /etc/sysctl.conf
+<<<<<<< HEAD
+=======
 echo "net.ipv4.tcp_timestamps = 1" >> /etc/sysctl.conf
+>>>>>>> 7dcc85c22cc793cc0d8f0481f827a955f5537c61
 echo "net.ipv4.tcp_window_scaling = 1" >> /etc/sysctl.conf
 echo "net.ipv4.tcp_wmem = 212992 65536 16777216" >> /etc/sysctl.conf
 echo "vm.min_free_kbytes = 65536" >> /etc/sysctl.conf
@@ -54,5 +57,12 @@ echo "net.ipv4.tcp_timestamps = 0" >> /etc/sysctl.conf
 echo "net.ipv4.tcp_congestion_control = htcp" >> /etc/sysctl.conf
 
 
+<<<<<<< HEAD
+# echo 30000 > /proc/sys/net/core/netdev_max_backlog
+# ifconfig eth1 txqueuelen ${TXQLEN:-40}
+
+
+=======
+>>>>>>> 7dcc85c22cc793cc0d8f0481f827a955f5537c61
 /sbin/sysctl -p /etc/sysctl.conf
 

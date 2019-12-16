@@ -11,6 +11,10 @@ lctl set_param osd-ldiskfs.*.read_cache_enable=1
 lctl set_param osd-ldiskfs.*.writethrough_cache_enable=1
 
 # http://doc.lustre.org/lustre_manual.xhtml
+<<<<<<< HEAD
+lctl set_param obdfilter.lfsbv-*.brw_size=16
+=======
 ###lctl set_param obdfilter.lfsbv-*.brw_size=16
+>>>>>>> 7dcc85c22cc793cc0d8f0481f827a955f5537c61
 
 
