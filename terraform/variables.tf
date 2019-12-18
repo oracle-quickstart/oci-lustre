@@ -44,8 +44,7 @@ variable "ssh_user" {
 # 2OSS_cluster in PHX AD-2 - INTZAC*
 # 4OSS_cluster in PHX AD-3 - INTZAC*
 variable "AD" {
-  default = "3"
-
+  default = "2"
 }
 
 variable "VPC-CIDR" {
@@ -120,7 +119,7 @@ variable "mds" {
 
 # OSS server count.
 variable "lustre_oss_count" {
-  default = "4"
+  default = "2"
 }
 
 # OSS server shape
@@ -152,7 +151,7 @@ variable "oss" {
 
 # Lustre Client server count   
 variable "lustre_client_count" {
-  default = "7"
+  default = "5"
 }
 
 # Lustre Client server shape
