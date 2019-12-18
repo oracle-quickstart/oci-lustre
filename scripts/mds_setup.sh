@@ -85,6 +85,16 @@ MTU=9000" > /etc/sysconfig/network-scripts/ifcfg-$interface
   systemctl restart network.service
 
   ip route ; ifconfig ; route ; ip addr ;
+
+  # Add logic to ensure the below is not empty
+    cmd=`nslookup $privateIp | grep -q "name = "`
+    while [ $? -ne 0 ];
+    do
+      echo "Waiting for nslookup..."
+      sleep 10s
+      cmd=`nslookup $privateIp | grep -q "name = "`
+    done
+
   SecondNicFQDNHostname=`nslookup $privateIp | grep "name = " | gawk -F"=" '{ print $2 }' | sed  "s|^ ||g" | sed  "s|\.$||g"`
   THIS_FQDN=$SecondNicFQDNHostname
   THIS_HOST=${THIS_FQDN%%.*}
@@ -142,10 +152,39 @@ fi
 mount_point="/mnt/mds${num}_mdt${index}_${disk_type}"
 
 
+
+  # Add logic to ensure the below is not empty
+    cmd=`nslookup ${mgs_fqdn_hostname_nic1} | grep -qi "Name:"`
+    while [ $? -ne 0 ];
+    do
+      echo "Waiting for nslookup..."
+      sleep 10s
+      cmd=`nslookup ${mgs_fqdn_hostname_nic1} | grep -qi "Name:"`
+    done
+
+
+
+
 mgs_ip=`nslookup ${mgs_fqdn_hostname_nic1} | grep "Address: " | gawk '{ print $2 }'` ; echo $mgs_ip
 if [ -z $mgs_ip ]; then
+
+  # Add logic to ensure the below is not empty
+    cmd=`nslookup ${mgs_fqdn_hostname_nic0} | grep -qi "Name:"`
+    while [ $? -ne 0 ];
+    do
+      echo "Waiting for nslookup..."
+      sleep 10s
+      cmd=`nslookup ${mgs_fqdn_hostname_nic0} | grep -qi "Name:"`
+    done
+
   mgs_ip=`nslookup ${mgs_fqdn_hostname_nic0} | grep "Address: " | gawk '{ print $2 }'` ; echo $mgs_ip
 fi
+
+
+#mgs_ip=`nslookup ${mgs_fqdn_hostname_nic1} | grep "Address: " | gawk '{ print $2 }'` ; echo $mgs_ip
+#if [ -z $mgs_ip ]; then
+#  mgs_ip=`nslookup ${mgs_fqdn_hostname_nic0} | grep "Address: " | gawk '{ print $2 }'` ; echo $mgs_ip
+#fi
 
 #mgs_ip=`nslookup ${mgs_hostname_prefix}1 | grep "Address: " | gawk '{ print $2 }'` ; echo $mgs_ip
 mgs_pri_nid=$mgs_ip@tcp1 ;  echo $mgs_pri_nid
