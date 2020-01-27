@@ -5,6 +5,7 @@ mgs_fqdn_hostname_nic0=$1
 mgs_fqdn_hostname_nic1=$2
 sas_workload=$3
 
+source /tmp/env_variables.sh
 
 # ensure the change before reboot is effective (should be unlimited)
 ulimit -l 
@@ -42,7 +43,7 @@ lnetctl net show --net tcp > tcp.yaml
 lnetctl  import --del tcp.yaml
 lctl list_nids
 
-
+#if [ "$mds_dual_nics" = "true" ]; then
   # Add logic to ensure the below is not empty
     cmd=`nslookup ${mgs_fqdn_hostname_nic1} | grep -qi "Name:"`
     while [ $? -ne 0 ];
@@ -51,7 +52,7 @@ lctl list_nids
       sleep 10s
       cmd=`nslookup ${mgs_fqdn_hostname_nic1} | grep -qi "Name:"`
     done
-
+#fi
 
 
 

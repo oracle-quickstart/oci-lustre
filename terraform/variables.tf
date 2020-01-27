@@ -82,7 +82,7 @@ variable "lustre_mds_count" {
 
 # MDS server shape
 variable "lustre_mds_server_shape" {
-  default = "BM.DenseIO2.52"
+  default = "VM.DenseIO2.16"
 }
 
 # size in GiB for each MDT disk.
@@ -96,7 +96,7 @@ variable "lustre_mdt_count" {
 }
 
 variable "enable_mdt_raid0" {
-  default = "false"
+  default = "true"
 }
 
 variable "mgs" {
@@ -119,7 +119,7 @@ variable "mds" {
 
 # OSS server count.
 variable "lustre_oss_count" {
-  default = "2"
+  default = "4"
 }
 
 # OSS server shape
@@ -129,12 +129,12 @@ variable "lustre_oss_server_shape" {
 
 # size in GiB for each OST disk.
 variable "ost_block_volume_size" {
-  default = "800"
+  default = "1000"
 }
 
 #eg: 4 block storage volume per OSS node.
 variable "lustre_ost_count" {
-  default = "16"
+  default = "8"
 }
 
 variable "enable_ost_raid0" {
@@ -151,7 +151,7 @@ variable "oss" {
 
 # Lustre Client server count   
 variable "lustre_client_count" {
-  default = "5"
+  default = "4"
 }
 
 # Lustre Client server shape
@@ -159,5 +159,11 @@ variable "lustre_client_shape" {
   default = "VM.Standard2.24"
 }
 
+
+locals {
+#164 mds_dual_nics = (length(regexall("^BM", var.mds["shape"])) > 0 ? true : false)
+mds_dual_nics = (length(regexall("^BM", var.lustre_mds_server_shape)) > 0 ? true : false)
+oss_dual_nics = (length(regexall("^BM", var.lustre_oss_server_shape)) > 0 ? true : false)
+}
 
 

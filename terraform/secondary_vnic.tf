@@ -19,11 +19,12 @@ resource "oci_core_vnic_attachment" "mds_secondary_vnic_attachment" {
   #Optional
   #display_name = "SecondaryVNIC"
   # set to 1, if you want to use 2nd physical NIC for this VNIC
-  nic_index = "1"
+  nic_index = (local.mds_dual_nics ? "1" : "0")
 }
 
 resource "oci_core_vnic_attachment" "oss_secondary_vnic_attachment" {
   count = var.lustre_oss_count
+  #count = var.lustre_oss_count
 
   #Required
   create_vnic_details {
@@ -43,6 +44,6 @@ resource "oci_core_vnic_attachment" "oss_secondary_vnic_attachment" {
   #Optional
   #display_name = "SecondaryVNIC"
   # set to 1, if you want to use 2nd physical NIC for this VNIC
-  nic_index = "1"
+  nic_index = (local.oss_dual_nics ? "1" : "0")
 }
 

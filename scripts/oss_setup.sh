@@ -7,6 +7,8 @@ mgs_fqdn_hostname_nic0=$2
 mgs_fqdn_hostname_nic1=$3
 uname -a
 
+source /tmp/env_variables.sh
+
 sed -i 's/SELINUX=enforcing/SELINUX=disabled/g' /etc/selinux/config
 getenforce
 modprobe lnet
@@ -106,8 +108,67 @@ MTU=9000" > /etc/sysconfig/network-scripts/ifcfg-$interface
   #cat /etc/oci-hostname.conf
 else
   # Servers with only 1 physical NIC or HPC shapes
+
+    curl -O https://docs.cloud.oracle.com/iaas/Content/Resources/Assets/secondary_vnic_all_configure.sh
+    chmod +x secondary_vnic_all_configure.sh
+    ./secondary_vnic_all_configure.sh -c
+
+     cd /etc/sysconfig/network-scripts/
+
+    # Wait till 2nd NIC is configured
+    privateIp=`curl -s http://169.254.169.254/opc/v1/vnics/ | jq '.[1].privateIp ' | sed 's/"//g' ` ;
+    echo $privateIp | grep "\." ;
+    while [ $? -ne 0 ];
+    do
+      sleep 10s
+      echo "Waiting for 2nd Physical NIC to get configured with hostname"
+      privateIp=`curl -s http://169.254.169.254/opc/v1/vnics/ | jq '.[1].privateIp ' | sed 's/"//g' ` ;
+      echo $privateIp | grep "\." ;
+    done
+
+    macAddr=`curl -s http://169.254.169.254/opc/v1/vnics/ | jq '.[1].macAddr ' | sed 's/"//g' ` ;
+    subnetCidrBlock=`curl -s http://169.254.169.254/opc/v1/vnics/ | jq '.[1].subnetCidrBlock ' | sed 's/"//g' ` ;
+
+    interface=`ip addr | grep -B2 $privateIp | grep "BROADCAST" | gawk -F ":" ' { print $2 } ' | sed -e 's/^[ \t]*//'`
+
+    echo "$subnetCidrBlock via $privateIp dev $interface" >  /etc/sysconfig/network-scripts/route-$interface
+    echo "Permanently configure 2nd NIC...$interface"
+    echo "DEVICE=$interface
+HWADDR=$macAddr
+ONBOOT=yes
+TYPE=Ethernet
+USERCTL=no
+IPADDR=$privateIp
+NETMASK=255.255.255.0
+MTU=9000
+NM_CONTROLLED=no
+" > /etc/sysconfig/network-scripts/ifcfg-$interface
+
+    # Intel or AMD
+    lscpu | grep "Vendor ID:"  | grep "AuthenticAMD"
+    if [ $? -eq 0 ];  then
+      echo "do nothing"
+    else
+      echo Intel
+      # For Intel shapes only
+      echo "ETHTOOL_OPTS=\"-G ${interface} rx 2047 tx 2047 rx-jumbo 8191; -L ${interface} combined 74\"" >> /etc/sysconfig/network-scripts/ifcfg-$interface
+    fi
+
+    systemctl status network.service
+    ifdown $interface
+    ifup $interface
+
+
+
+  # THIS_FQDN="`hostname --fqdn`"
+  # THIS_HOST="${THIS_FQDN%%.*}"
+  SecondVNicFQDNHostname=`nslookup $privateIp | grep "name = " | gawk -F"=" '{ print $2 }' | sed  "s|^ ||g" | sed  "s|\.$||g"`
+  THIS_FQDN=$SecondVNicFQDNHostname
+  THIS_HOST=${THIS_FQDN%%.*}
+  SecondVNICDomainName=${THIS_FQDN#*.*}
   THIS_FQDN="`hostname --fqdn`"
   THIS_HOST="${THIS_FQDN%%.*}" 
+
 fi
 
 
@@ -116,7 +177,7 @@ lnetctl net add --net tcp1 --if $interface  –peer-timeout 180 –peer-credits 
 
 #############
 
-
+#if [ "$mds_dual_nics" = "true" ]; then
   # Add logic to ensure the below is not empty
     cmd=`nslookup ${mgs_fqdn_hostname_nic1} | grep -qi "Name:"`
     while [ $? -ne 0 ];
@@ -125,7 +186,7 @@ lnetctl net add --net tcp1 --if $interface  –peer-timeout 180 –peer-credits 
       sleep 10s
       cmd=`nslookup ${mgs_fqdn_hostname_nic1} | grep -qi "Name:"`
     done
-
+#fi
 
 
 
@@ -154,9 +215,11 @@ fi
 disk_mount () {
 
 cp /etc/mdadm.conf /etc/mdadm.conf.backup
-if [ $enable_ost_raid0 = "true" ]; then
+if [ $enable_ost_raid0 = "true" -a $total_disk_count -gt 1 ]; then
   echo -e "Create stripe RAID of $dcount $disk_type disk ."
   mount_device="/dev/md/md_$disk_type"
+  # reset index to align with node num-1, when raid0 is enabled, since there will be only 1 disk per node.
+  index=$((num-1))
   device_list=""
   raid_level="raid0"
   if [ $disk_type = "nvme" ]; then
@@ -213,15 +276,15 @@ for disk in `ls /dev/ | grep nvme | grep n1`; do
   disk_type="nvme"
   pvcreate -y  /dev/$disk
   mount_device="/dev/$disk"
-  index=$((((((num-1))*total_disk_count))+dcount))
-  echo $index 
+  index=$((((((num-1))*total_disk_count))+(dcount)))
+  echo $index
+  dcount=$((dcount+1)) 
   if [ $enable_ost_raid0 = "true" -a $total_disk_count -gt 1 ]; then
     echo "wait to loop through all disk"
   else
     disk_mount
   fi
 
-  dcount=$((dcount+1))
 #  index=$((index+1))
 done;
 
@@ -245,14 +308,14 @@ for disk in `cat /proc/partitions | grep -ivw 'sda' | grep -ivw 'sda[1-3]' | gre
   mount_device="/dev/$disk"
   drive_letter=`echo $disk | sed 's/sd//'`
   drive_variables="${drive_variables}${drive_letter}"
-  index=$((((((num-1))*total_disk_count))+dcount))
-  echo $index 
+  index=$((((((num-1))*total_disk_count))+(dcount)))
+  echo $index
+  dcount=$((dcount+1)) 
   if [ $enable_ost_raid0 = "true" -a $total_disk_count -gt 1 ]; then
     echo "wait to loop through all disk"
   else
     disk_mount
   fi
-  dcount=$((dcount+1))
 done;
 
 echo "$dcount $disk_type disk found"

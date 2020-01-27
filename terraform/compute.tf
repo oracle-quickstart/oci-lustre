@@ -25,6 +25,8 @@ resource "oci_core_instance" "lustre_mds" {
         "\n",
         [
           "#!/usr/bin/env bash",
+          "mds_dual_nics=\"${local.mds_dual_nics}\"",
+          "oss_dual_nics=\"${local.oss_dual_nics}\"",
           "mgs_hostname_prefix_nic0=${var.mgs["hostname_prefix_nic0"]}",
           "mgs_hostname_prefix_nic1=${var.mgs["hostname_prefix_nic1"]}",
           "PublicSubnetsFQDN=\"${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com ${oci_core_subnet.public[0].dns_label}.${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com\"",
@@ -69,6 +71,8 @@ resource "oci_core_instance" "lustre_oss" {
         "\n",
         [
           "#!/usr/bin/env bash",
+          "mds_dual_nics=\"${local.mds_dual_nics}\"",
+          "oss_dual_nics=\"${local.oss_dual_nics}\"",
           "mgs_hostname_prefix_nic0=${var.mgs["hostname_prefix_nic0"]}",
           "mgs_hostname_prefix_nic1=${var.mgs["hostname_prefix_nic1"]}",
           "PublicSubnetsFQDN=\"${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com ${oci_core_subnet.public[0].dns_label}.${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com\"",
@@ -107,7 +111,23 @@ resource "oci_core_instance" "lustre_client" {
     ssh_authorized_keys = var.ssh_public_key
     #user_data = "${base64encode(data.template_file.boot_script.rendered)}"
     #user_data =  "${base64encode(file(../scripts/lustre.sh))}"
-    user_data = base64encode(file("../scripts/lustre_client.sh"))
+    #user_data = base64encode(file("../scripts/lustre_client.sh"))
+    user_data = base64encode(
+      join(
+        "\n",
+        [
+          "#!/usr/bin/env bash",
+          "mds_dual_nics=\"${local.mds_dual_nics}\"",
+          "oss_dual_nics=\"${local.oss_dual_nics}\"",
+          "mgs_hostname_prefix_nic0=${var.mgs["hostname_prefix_nic0"]}",
+          "mgs_hostname_prefix_nic1=${var.mgs["hostname_prefix_nic1"]}",
+          #"PublicSubnetsFQDN=\"${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com ${oci_core_subnet.public[0].dns_label}.${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com\"",
+          #"PublicBSubnetsFQDN=\"${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com ${oci_core_subnet.publicb[0].dns_label}.${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com\"",
+          file("../scripts/lustre_client.sh"),
+        ],
+      ),
+    )
+
   }
 
   timeouts {
@@ -208,7 +228,7 @@ resource "null_resource" "lustre-mds-setup-after-kernel-update" {
       "sudo -s bash -c 'set -x && /tmp/kernel_parameters_tuning.sh'",
       "sudo -s bash -c 'set -x && /tmp/nic_tuning.sh'",
       "sudo -s bash -c \"set -x && /tmp/mds_setup.sh ${var.enable_mdt_raid0} ${var.mgs["hostname_nic0"]}.${oci_core_subnet.public[0].dns_label}.${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com ${var.mgs["hostname_nic1"]}.${oci_core_subnet.publicb[0].dns_label}.${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com \"",
-      "sudo -s bash -c 'set -x && /tmp/lustre_all_tuning.sh'",
+      #"sudo -s bash -c 'set -x && /tmp/lustre_all_tuning.sh'",
       "sudo -s bash -c 'set -x && /tmp/lustre_server_tuning.sh'",
     ]
   }
@@ -281,7 +301,7 @@ resource "null_resource" "lustre-oss-setup-after-kernel-update" {
       "sudo -s bash -c 'set -x && /tmp/kernel_parameters_tuning.sh'",
       "sudo -s bash -c 'set -x && /tmp/nic_tuning.sh'",
       "sudo -s bash -c \"set -x && /tmp/oss_setup.sh ${var.enable_ost_raid0}  ${var.mgs["hostname_nic0"]}.${oci_core_subnet.public[0].dns_label}.${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com ${var.mgs["hostname_nic1"]}.${oci_core_subnet.publicb[0].dns_label}.${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com \"",
-      "sudo -s bash -c 'set -x && /tmp/lustre_all_tuning.sh'",
+      #"sudo -s bash -c 'set -x && /tmp/lustre_all_tuning.sh'",
       "sudo -s bash -c 'set -x && /tmp/lustre_server_tuning.sh'",
       "sudo -s bash -c 'set -x && /tmp/lustre_oss_tuning.sh'",
     ]
@@ -355,7 +375,7 @@ resource "null_resource" "lustre-client-setup-after-kernel-update" {
       "sudo -s bash -c 'set -x && /tmp/kernel_parameters_tuning.sh'",
       "sudo -s bash -c 'set -x && /tmp/nic_tuning.sh'",
       "sudo -s bash -c \"set -x && /tmp/client_setup.sh  ${var.mgs["hostname_nic0"]}.${oci_core_subnet.public[0].dns_label}.${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com ${var.mgs["hostname_nic1"]}.${oci_core_subnet.publicb[0].dns_label}.${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com  \"",
-      "sudo -s bash -c 'set -x && /tmp/lustre_all_tuning.sh'",
+      #"sudo -s bash -c 'set -x && /tmp/lustre_all_tuning.sh'",
       "sudo -s bash -c 'set -x && /tmp/lustre_client_tuning.sh'",
     ]
   }
