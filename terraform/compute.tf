@@ -121,8 +121,6 @@ resource "oci_core_instance" "lustre_client" {
           "oss_dual_nics=\"${local.oss_dual_nics}\"",
           "mgs_hostname_prefix_nic0=${var.mgs["hostname_prefix_nic0"]}",
           "mgs_hostname_prefix_nic1=${var.mgs["hostname_prefix_nic1"]}",
-          #"PublicSubnetsFQDN=\"${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com ${oci_core_subnet.public[0].dns_label}.${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com\"",
-          #"PublicBSubnetsFQDN=\"${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com ${oci_core_subnet.publicb[0].dns_label}.${oci_core_virtual_network.lustre.dns_label}.oraclevcn.com\"",
           file("../scripts/lustre_client.sh"),
         ],
       ),
