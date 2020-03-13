@@ -113,6 +113,18 @@ setenforce 0
 echo "options ksocklnd nscheds=10 sock_timeout=100 credits=2560 peer_credits=63 enable_irq_affinity=0"  >  /etc/modprobe.d/ksocklnd.conf
 
 
+cat /etc/os-release | grep "^NAME=" | grep "CentOS"
+if [ $? -eq 0 ]; then
+  awk -F\' /^menuentry/{print\$2}  /boot/efi/EFI/centos/grub.cfg
+else
+  os_with_lustre=`awk -F\' /^menuentry/{print\$2}  /boot/efi/EFI/redhat/grub.cfg  | grep -v "Rescue" | grep "lustre.x86_64" | gawk -F"'" ' { print $2 } ' `  ;  echo $os_with_lustre
+  # Add single quotes
+  os_with_lustre_with_quote="'${os_with_lustre}'"  ;  echo $os_with_lustre_with_quote
+  grub2-set-default "'${os_with_lustre_with_quote}'"
+fi
+
+
+
 touch /tmp/complete
 echo "complete.  rebooting now"
 reboot 

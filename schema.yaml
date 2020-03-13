@@ -1,0 +1,223 @@
+title: "Lustre Deployment"
+schemaVersion: 1.0.0
+version: "20200312"
+locale: "en"
+groupings:
+  - title: "Hidden General Configuration"
+    visible: false
+    variables:
+    - tenancy_ocid
+    - compartment_ocid
+    - region
+    - scripts_directory
+    - ssh_user
+    - ad_number
+    - images
+    - mp_listing_id
+    - mp_listing_resource_id
+    - mp_listing_resource_version
+    - use_marketplace_image
+    - mgs_hostname_prefix_nic0
+    - mgs_hostname_prefix_nic1
+    - mgs_hostname_nic0
+    - mgs_hostname_nic1
+    - mds_hostname_prefix_nic0
+    - mds_hostname_prefix_nic1
+    - oss_hostname_prefix_nic0
+    - oss_hostname_prefix_nic1
+    - lustre_client_hostname_prefix
+  - title: "General Deployment Configuration"
+    visible: true
+    variables:
+    - vpc_cidr
+    - ssh_public_key
+    - ad_name
+  - title: "Bastion Instance Configuration"
+    visible: true
+    variables:
+    - bastion_shape
+    - bastion_node_count
+    - bastion_hostname_prefix
+  - title: "Lustre Metadata Server Instance Configuration"
+    visible: true
+    variables:
+    - lustre_mds_server_shape
+    - lustre_mds_count
+    - lustre_mdt_count
+    - mdt_block_volume_size
+    - enable_mdt_raid0
+  - title: "Lustre Object Server Instance Configuration"
+    visible: true
+    variables:
+    - lustre_oss_server_shape
+    - lustre_oss_count
+    - lustre_ost_count
+    - ost_block_volume_size
+    - enable_ost_raid0
+  - title: "Lustre Client Instance Configuration"
+    visible: true
+    variables:
+    - lustre_client_shape
+    - lustre_client_count
+
+# Add variable here ,  if you want to do input validation or else it does not need to be included here.
+variables:
+  vpc_cidr:
+    title: "VPC CIDR"
+    description: "Network CIDR to use for VPC/VCN."
+    type: string
+    default: "10.0.0.0/16"
+    required: true
+  ssh_public_key:
+    title: "SSH Public Key"
+    description: "Public key for all compute instances."
+    type: string
+    required: true
+  ad_name:
+    title: "Availability Domain"
+    description: "Availability Domain where filesystem is deployed."
+    type: oci:identity:availabilitydomain:name
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+    required: true
+  bastion_shape:
+    title: "Bastion Compute Shape"
+    description: "Shape for bastion instances."
+    type: oci:core:instanceshape:name
+    default: "VM.Standard2.2"
+    required: true
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+      imageId: ${mp_listing_resource_id}
+  bastion_node_count:
+    title: "Number of bastion"
+    description: "Number of bastion instances."
+    type: integer
+    default: 1
+    required: true
+  bastion_hostname_prefix:
+    type: string
+    required: true
+    default: "bastion-"
+    description: "Bastion hostname prefix "
+  lustre_mds_server_shape:
+    title: "Metadata Server Compute Shape"
+    description: "Shape for metadata server instances."
+    type: oci:core:instanceshape:name
+    default: "VM.Standard2.2"
+    required: true
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+      imageId: ${mp_listing_resource_id}
+  lustre_mds_count:
+    title: "Number of Metadata Servers"
+    description: "Number of metadata server instances."
+    type: integer
+    default: 1
+    minimum: 1
+    required: true
+  lustre_mdt_count:
+    title: "Number of MDT block volumes"
+    description: "Number of block volumes for each metadata server. On compute shapes with local NVMe SSD, it will create one filesystem using local nvme and another one using block volumes."
+    type: integer
+    default: 1
+    minimum: 1
+    maximum: 31
+    required: true
+  mdt_block_volume_size:
+    title: "Block volume size"
+    description: "Size in GB for each block volume attached to metadata server, min 50."
+    type: integer
+    default: 50
+    minimum: 50
+    maximum: 32768
+    required: true
+  enable_mdt_raid0:
+    description: "Set to true, if you want to do a RAID0 and create one MDT using all block volumes on metadata server, else set to false to attach each block volume disk as seperate MDTs."
+    type: string
+    required: true
+    default: "false"
+  lustre_oss_server_shape:
+    title: "Object Server Compute Shape"
+    description: "Shape for object server instances."
+    type: oci:core:instanceshape:name
+    default: "VM.Standard2.2"
+    required: true
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+      imageId: ${mp_listing_resource_id}
+  lustre_oss_count:
+    title: "Number of Object Servers"
+    description: "Number of object server instances."
+    type: integer
+    default: 1
+    minimum: 1
+    required: true
+  lustre_ost_count:
+    title: "Number of OST block volumes"
+    description: "Number of block volumes for each object server. On compute shapes with local NVMe SSD, it will create one filesystem using local nvme and another one using block volumes."
+    type: integer
+    default: 1
+    minimum: 1
+    maximum: 31
+    required: true
+  ost_block_volume_size:
+    title: "Block volume size"
+    description: "Size in GB for each block volume attached to object server, min 50."
+    type: integer
+    default: 50
+    minimum: 50
+    maximum: 32768
+    required: true
+  enable_ost_raid0:
+    description: "Set to true, if you want to do a RAID0 and create one OST using all block volumes on object server, else set to false to attach each block volume disk as seperate OSTs."
+    type: string
+    required: true
+    default: "false"
+  lustre_client_shape:
+    title: "Lustre Client Compute Shape"
+    description: "Shape for client instances."
+    type: oci:core:instanceshape:name
+    default: "VM.Standard2.2"
+    required: false
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+      imageId: ${mp_listing_resource_id}
+  lustre_client_count:
+    title: "Number of clients"
+    description: "Number of client instances."
+    type: integer
+    default: 1
+    minimum: 0
+    required: false
+  ad_number:
+    description: "Shadowed TF value to ignore"
+    type: integer
+    required: true
+    default: -1
+  scripts_directory:
+    type: string
+    required: true
+    default: "script"
+    description: "Folder which has all the scripts."
+  ssh_user:
+    type: string
+    required: true
+    default: "opc"
+    description: "opc for OracleLinux & CentOS, ubuntu for Ubuntu OS."
+  mp_listing_id:
+    type: string
+    required: true
+    description: "Marketplace Listing ID"
+  mp_listing_resource_id:
+    type: oci:core:image:id
+    required: true
+    description: "Marketplace Image OCID"
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+  mp_listing_resource_version:
+    type: string
+    required: true
+    description: "Marketplace Listing package version"
+
+

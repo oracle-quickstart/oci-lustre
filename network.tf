@@ -3,7 +3,7 @@ All network resources for this template
 */
 
 resource "oci_core_virtual_network" "lustre" {
-  cidr_block     = var.VPC-CIDR
+  cidr_block     = var.vpc_cidr
   compartment_id = var.compartment_ocid
   display_name   = "lustre"
   dns_label      = "lustre"
@@ -60,7 +60,7 @@ resource "oci_core_security_list" "PublicSubnet" {
   }
   ingress_security_rules {
     protocol = "all"
-    source   = var.VPC-CIDR
+    source   = var.vpc_cidr
   }
 }
 
@@ -76,12 +76,12 @@ resource "oci_core_security_list" "PrivateSubnet" {
 
   egress_security_rules {
     protocol    = "all"
-    destination = var.VPC-CIDR
+    destination = var.vpc_cidr
   }
 
   ingress_security_rules {
     protocol = "6"
-    source   = var.VPC-CIDR
+    source   = var.vpc_cidr
   }
 
   ingress_security_rules {
@@ -90,7 +90,7 @@ resource "oci_core_security_list" "PrivateSubnet" {
       min = 22
     }
     protocol = "6"
-    source   = var.VPC-CIDR
+    source   = var.vpc_cidr
   }
 }
 
@@ -100,7 +100,7 @@ resource "oci_core_subnet" "public" {
   count = "1"
 
   #availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[var.AD - 1],"name")}"
-  cidr_block        = cidrsubnet(var.VPC-CIDR, 8, count.index)
+  cidr_block        = cidrsubnet(var.vpc_cidr, 8, count.index)
   display_name      = "public_${count.index}"
   compartment_id    = var.compartment_ocid
   vcn_id            = oci_core_virtual_network.lustre.id
@@ -114,7 +114,7 @@ resource "oci_core_subnet" "publicb" {
   count = "1"
 
   #availability_domain = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[var.AD - 1],"name")}"
-  cidr_block        = cidrsubnet(var.VPC-CIDR, 8, count.index + 3)
+  cidr_block        = cidrsubnet(var.vpc_cidr, 8, count.index + 3)
   display_name      = "publicb_${count.index}"
   compartment_id    = var.compartment_ocid
   vcn_id            = oci_core_virtual_network.lustre.id
@@ -130,7 +130,7 @@ resource "oci_core_subnet" "private" {
   count = "1"
 
   #availability_domain        = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[var.AD - 1],"name")}"
-  cidr_block                 = cidrsubnet(var.VPC-CIDR, 8, count.index + 6)
+  cidr_block                 = cidrsubnet(var.vpc_cidr, 8, count.index + 6)
   display_name               = "private_${count.index}"
   compartment_id             = var.compartment_ocid
   vcn_id                     = oci_core_virtual_network.lustre.id
@@ -145,7 +145,7 @@ resource "oci_core_subnet" "privateb" {
   count = "1"
 
   #availability_domain        = "${lookup(data.oci_identity_availability_domains.ADs.availability_domains[var.AD - 1],"name")}"
-  cidr_block                 = cidrsubnet(var.VPC-CIDR, 8, count.index + 9)
+  cidr_block                 = cidrsubnet(var.vpc_cidr, 8, count.index + 9)
   display_name               = "privateb_${count.index}"
   compartment_id             = var.compartment_ocid
   vcn_id                     = oci_core_virtual_network.lustre.id

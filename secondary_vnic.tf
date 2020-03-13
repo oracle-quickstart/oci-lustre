@@ -8,8 +8,8 @@ resource "oci_core_vnic_attachment" "mds_secondary_vnic_attachment" {
 
     #Optional
     assign_public_ip = "false"
-    display_name     = "${var.mgs["hostname_prefix_nic1"]}${format("%01d", count.index + 1)}"
-    hostname_label   = "${var.mgs["hostname_prefix_nic1"]}${format("%01d", count.index + 1)}"
+    display_name     = "${var.mgs_hostname_prefix_nic1}${format("%01d", count.index + 1)}"
+    hostname_label   = "${var.mgs_hostname_prefix_nic1}${format("%01d", count.index + 1)}"
 
     # false is default value
     skip_source_dest_check = "false"
@@ -33,8 +33,8 @@ resource "oci_core_vnic_attachment" "oss_secondary_vnic_attachment" {
 
     #Optional
     assign_public_ip = "false"
-    display_name     = "${var.oss["hostname_prefix_nic1"]}${format("%01d", count.index + 1)}"
-    hostname_label   = "${var.oss["hostname_prefix_nic1"]}${format("%01d", count.index + 1)}"
+    display_name     = "${var.oss_hostname_prefix_nic1}${format("%01d", count.index + 1)}"
+    hostname_label   = "${var.oss_hostname_prefix_nic1}${format("%01d", count.index + 1)}"
 
     # false is default value
     skip_source_dest_check = "false"
