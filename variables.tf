@@ -109,13 +109,13 @@ variable "ssh_user" {
 #-------------------------------------------------------------------------------------------------------------
 # Marketplace variables
 # ------------------------------------------------------------------------------------------------------------
-# Based on Oracle Linux 7.6 UEK Image for BeeGFS filesystem marketplace image.
+# Based on Oracle Linux 7.6 UEK Image for Lustre filesystem (hpc-filesystem-Lustre-OL76_4.14.35-1902.3.2.el7uek.x86_64) marketplace image.
 
 variable "mp_listing_id" {
-  default = "ocid1.appcataloglisting.oc1..aaaaaaaafjivndwkvouw6q75lf534u5fmjqeyfzc5ze3j6enbjg5pfmsh2za"
+  default = "ocid1.appcataloglisting.oc1..aaaaaaaaveqtwusi5tiuph3j5lbeddgs337yiug5seah326z57x744sphmyq"
 }
 variable "mp_listing_resource_id" {
-  default = "ocid1.image.oc1..aaaaaaaapbdvrqxvdgcyce24mea4b252bjubtscumthpx7u6jvurprr2kgjq"
+  default = "ocid1.image.oc1..aaaaaaaagbswqa23ufl6v6ssxq5yqs5mjkxbbcarcnpokqfm3kseouinlrba"
 }
 variable "mp_listing_resource_version" {
  default = "1.0"
