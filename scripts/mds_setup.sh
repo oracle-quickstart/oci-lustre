@@ -108,7 +108,7 @@ MTU=9000" > /etc/sysconfig/network-scripts/ifcfg-$interface
 else
   # Servers with only 1 physical NIC or HPC shapes
 
-    curl -O https://docs.cloud.oracle.com/en-us/iaas/Content/Resources/Assets/secondary_vnic_all_configure.sh
+    curl -O https://raw.githubusercontent.com/oracle/terraform-examples/master/examples/oci/connect_vcns_using_multiple_vnics/scripts/secondary_vnic_all_configure.sh
     chmod +x secondary_vnic_all_configure.sh
     ./secondary_vnic_all_configure.sh -c 
 

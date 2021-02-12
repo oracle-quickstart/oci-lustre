@@ -24,7 +24,7 @@ variable bastion_hostname_prefix { default = "bastion-" }
 # MDS server count
 variable "lustre_mds_count" { default = "1" }
 # MDS server shape
-variable "lustre_mds_server_shape" { default = "VM.Standard2.2" }
+variable "lustre_mds_server_shape" { default = "VM.Standard2.4" }
 # size in GiB for each MDT disk. 800 GB
 variable "mdt_block_volume_size" { default = "50" }
 #eg: 2 block storage volume per MDS node.
@@ -49,7 +49,7 @@ variable "lustre_client_hostname_prefix" { default = "lustre-client-" }
 # OSS server count.
 variable "lustre_oss_count" { default = "1" }
 # OSS server shape
-variable "lustre_oss_server_shape" { default = "VM.Standard2.2" }
+variable "lustre_oss_server_shape" { default = "VM.Standard2.4" }
 # size in GiB for each OST disk.
 variable "ost_block_volume_size" { default = "50" }
 #eg: 4 block storage volume per OSS node.
@@ -60,7 +60,7 @@ variable "enable_ost_raid0" { default = "false" }
 # Lustre Client server count   
 variable "lustre_client_count" { default = "1" }
 # Lustre Client server shape
-variable "lustre_client_shape" { default = "VM.Standard2.2" }
+variable "lustre_client_shape" { default = "VM.Standard2.4" }
 
 
 variable "scripts_directory" { default = "scripts" }
@@ -83,7 +83,7 @@ variable "ad_name" {
 
 # This is currently used for the TF deployment. Valid values 0,1,2.
 variable "ad_number" {
-  default = "0"
+  default = "-1"
 }
 
 
@@ -109,17 +109,30 @@ variable "ssh_user" {
 #-------------------------------------------------------------------------------------------------------------
 # Marketplace variables
 # ------------------------------------------------------------------------------------------------------------
-# Based on Oracle Linux 7.6 UEK Image for Lustre filesystem (hpc-filesystem-Lustre-OL76_4.14.35-1902.3.2.el7uek.x86_64) marketplace image.
-
+# hpc-filesystem-xxxxxxx-OL77_3.10.0-1062.9.1.el7.x86_64
 variable "mp_listing_id" {
-  default = "ocid1.appcataloglisting.oc1..aaaaaaaaveqtwusi5tiuph3j5lbeddgs337yiug5seah326z57x744sphmyq"
+  default = "ocid1.appcataloglisting.oc1..aaaaaaaajmdokvtzailtlchqxk7nai45fxar6em7dfbdibxmspjsvs4uz3uq"
 }
 variable "mp_listing_resource_id" {
-  default = "ocid1.image.oc1..aaaaaaaagbswqa23ufl6v6ssxq5yqs5mjkxbbcarcnpokqfm3kseouinlrba"
+  default = "ocid1.image.oc1..aaaaaaaacnodhlnuidkvnlvu3dpu4n26knkqudjxzfpq3vexi7cobbclmbxa"
 }
 variable "mp_listing_resource_version" {
  default = "1.0"
 }
+
+
+
+# Based on Oracle Linux 7.6 UEK Image for Lustre filesystem (hpc-filesystem-Lustre-OL76_4.14.35-1902.3.2.el7uek.x86_64) marketplace image.
+
+#variable "mp_listing_id" {
+#  default = "ocid1.appcataloglisting.oc1..aaaaaaaaveqtwusi5tiuph3j5lbeddgs337yiug5seah326z57x744sphmyq"
+#}
+#variable "mp_listing_resource_id" {
+#  default = "ocid1.image.oc1..aaaaaaaagbswqa23ufl6v6ssxq5yqs5mjkxbbcarcnpokqfm3kseouinlrba"
+#}
+#variable "mp_listing_resource_version" {
+# default = "1.0"
+#}
 
 variable "use_marketplace_image" {
   default = true

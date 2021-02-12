@@ -86,22 +86,22 @@ mkdir -p $mount_point
 #  mount_options=" -o flock "
 #fi
  
-mount -t lustre -o flock ${mgs_ip}@tcp1:/$fsname $mount_point
+mount -t lustre  ${mgs_ip}@tcp1:/$fsname $mount_point
 if [ $? -eq 0 ]; then
   ## Update fstab
   cp /etc/fstab /etc/fstab.backup
-  echo "${mgs_ip}@tcp1:/$fsname  $mount_point lustre defaults,_netdev,flock,x-systemd.automount,x-systemd.requires=lnet.service 0 0" >> /etc/fstab
+  echo "${mgs_ip}@tcp1:/$fsname  $mount_point lustre defaults,_netdev,x-systemd.automount,x-systemd.requires=lnet.service 0 0" >> /etc/fstab
 fi
 
 disk_type=bv
 fsname=lfsbv
 mount_point="/mnt/mdt_$disk_type"
 mkdir -p $mount_point
-mount -t lustre -o flock ${mgs_ip}@tcp1:/$fsname $mount_point
+mount -t lustre ${mgs_ip}@tcp1:/$fsname $mount_point
 if [ $? -eq 0 ]; then
   ## Update fstab
   cp /etc/fstab /etc/fstab.backup
-  echo "${mgs_ip}@tcp1:/$fsname  $mount_point lustre defaults,_netdev,flock,x-systemd.automount,x-systemd.requires=lnet.service 0 0" >> /etc/fstab
+  echo "${mgs_ip}@tcp1:/$fsname  $mount_point lustre defaults,_netdev,x-systemd.automount,x-systemd.requires=lnet.service 0 0" >> /etc/fstab
 fi
 
 
