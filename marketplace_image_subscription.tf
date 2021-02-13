@@ -30,7 +30,6 @@ resource "oci_core_app_catalog_subscription" "mp_image_subscription" {
   }
 }
 
-
 # Gets the partner image subscription
 data "oci_core_app_catalog_subscriptions" "mp_image_subscription" {
   #Required
@@ -41,8 +40,6 @@ data "oci_core_app_catalog_subscriptions" "mp_image_subscription" {
 
   filter {
     name   = "listing_resource_version"
-    values = ["${local.mp_listing_resource_version}"]
+    values = [local.mp_listing_resource_version]
   }
 }
-
-

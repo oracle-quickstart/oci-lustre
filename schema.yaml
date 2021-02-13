@@ -1,9 +1,10 @@
 title: "Lustre Deployment"
 schemaVersion: 1.0.0
-version: "20200312"
+version: "20200403"
 locale: "en"
+
 groupings:
-  - title: "Hidden General Configuration"
+  - title: "Predefined General Configuration"
     visible: false
     variables:
     - tenancy_ocid
@@ -11,68 +12,101 @@ groupings:
     - region
     - scripts_directory
     - ssh_user
+    - volume_attach_device_mapping
+    - volume_type_vpus_per_gb_mapping
     - ad_number
     - images
     - mp_listing_id
     - mp_listing_resource_id
     - mp_listing_resource_version
     - use_marketplace_image
-    - mgs_hostname_prefix_nic0
-    - mgs_hostname_prefix_nic1
-    - mgs_hostname_nic0
-    - mgs_hostname_nic1
-    - mds_hostname_prefix_nic0
-    - mds_hostname_prefix_nic1
-    - oss_hostname_prefix_nic0
-    - oss_hostname_prefix_nic1
-    - lustre_client_hostname_prefix
+    - use_marketplace_image
+  - title: "Lustre Filesystem Configuration"
+    visible: true
+    variables:
+    - fs_name
+    - fs_type
+    - fs_workload_type
   - title: "General Deployment Configuration"
     visible: true
     variables:
-    - vpc_cidr
     - ssh_public_key
     - ad_name
+  - title: "VCN Configuration"
+    visible: true
+    variables:
+    - use_existing_vcn
+    - vpc_cidr
+    - vcn_id
+    - bastion_subnet_id
+    - storage_subnet_id
+    - fs_subnet_id
   - title: "Bastion Instance Configuration"
     visible: true
     variables:
     - bastion_shape
     - bastion_node_count
     - bastion_hostname_prefix
-  - title: "Lustre Metadata Server Instance Configuration"
+  - title: "Lustre Management Service Configuration"
+    visible: false
+    variables:
+    - management_server_shape
+    - management_server_node_count
+    - management_server_hostname_prefix
+    - management_server_disk_count
+    - management_server_disk_size
+    - management_server_disk_perf_tier
+  - title: "Lustre Metadata Service Configuration"
+    visible:
+      and:
+        - not:
+          - eq:
+            - ${fs_workload_type}
+            - "Large Files"
+    variables:
+    - scratch_metadata_server_shape
+    - persistent_metadata_server_shape
+    - metadata_server_node_count
+    - metadata_server_hostname_prefix
+    - metadata_server_disk_count
+    - metadata_server_disk_size
+    - metadata_server_disk_perf_tier
+  - title: "Lustre Storage Service Configuration"
     visible: true
     variables:
-    - lustre_mds_server_shape
-    - lustre_mds_count
-    - lustre_mdt_count
-    - mdt_block_volume_size
-    - enable_mdt_raid0
-  - title: "Lustre Object Server Instance Configuration"
-    visible: true
+    - scratch_storage_server_shape
+    - persistent_storage_server_shape
+    - storage_server_node_count
+    - storage_server_hostname_prefix
+  - title: "Lustre Storage Configuration"
     variables:
-    - lustre_oss_server_shape
-    - lustre_oss_count
-    - lustre_ost_count
-    - ost_block_volume_size
-    - enable_ost_raid0
+    - storage_tier_1_disk_perf_tier
+    - storage_tier_1_disk_count
+    - storage_tier_1_disk_size
+    visible:
+      not:
+        - eq:
+          - ${fs_type}
+          - "Scratch"
   - title: "Lustre Client Instance Configuration"
     visible: true
     variables:
-    - lustre_client_shape
-    - lustre_client_count
+    - create_compute_nodes
+    - client_node_shape
+    - client_node_count
+    - client_node_hostname_prefix
+    - stripe_size
+    - mount_point
+
 
 # Add variable here ,  if you want to do input validation or else it does not need to be included here.
 variables:
-  vpc_cidr:
-    title: "VPC CIDR"
-    description: "Network CIDR to use for VPC/VCN."
-    type: string
-    default: "10.0.0.0/16"
-    required: true
   ssh_public_key:
     title: "SSH Public Key"
     description: "Public key for all compute instances."
     type: string
     required: true
+
   ad_name:
     title: "Availability Domain"
     description: "Availability Domain where filesystem is deployed."
@@ -80,6 +114,7 @@ variables:
     dependsOn:
       compartmentId: ${compartment_ocid}
     required: true
+
   bastion_shape:
     title: "Bastion Compute Shape"
     description: "Shape for bastion instances."
@@ -89,126 +124,375 @@ variables:
     dependsOn:
       compartmentId: ${compartment_ocid}
       imageId: ${mp_listing_resource_id}
+
   bastion_node_count:
     title: "Number of bastion"
     description: "Number of bastion instances."
     type: integer
     default: 1
+    minimum: 1
     required: true
+    visible: false
+
   bastion_hostname_prefix:
     type: string
     required: true
     default: "bastion-"
     description: "Bastion hostname prefix "
-  lustre_mds_server_shape:
-    title: "Metadata Server Compute Shape"
-    description: "Shape for metadata server instances."
+
+  management_server_shape:
+    title: "Management Server Compute Shape"
+    description: "Shape for management server instances."
     type: oci:core:instanceshape:name
     default: "VM.Standard2.2"
     required: true
     dependsOn:
       compartmentId: ${compartment_ocid}
       imageId: ${mp_listing_resource_id}
-  lustre_mds_count:
-    title: "Number of Metadata Servers"
+
+  management_server_node_count:
+    title: "Number of management server"
+    description: "Number of management server instances."
+    type: integer
+    default: 1
+    minimum: 1
+    maximum: 1
+    required: true
+
+  management_server_hostname_prefix:
+    type: string
+    required: true
+    default: "mgs-server-"
+    description: "Management server hostname prefix "
+
+  management_server_disk_count:
+    title: "Number of block volumes (MGT)"
+    description: "Number of block volumes for each management server. Durable and Highly Available  will always be used for management server."
+    type: integer
+    default: 1
+    minimum: 1
+    maximum: 1
+    required: true
+
+  management_server_disk_size:
+    title: "Block volume size"
+    description: "Size in GB for block volumes attached to management server, min 50."
+    type: integer
+    default: 50
+    minimum: 50
+    maximum: 50
+    required: true
+
+  management_server_disk_perf_tier:
+    title: "Management Server Target Block volume performance"
+    description: "Block volume elastic performance tier.  See https://docs.cloud.oracle.com/en-us/iaas/Content/Block/Concepts/blockvolumeelasticperformance.htm for more information."
+    type: enum
+    enum:
+    - "Higher Performance"
+    - "Balanced"
+    - "Lower Cost"
+    required: true
+    default: "Balanced"
+
+  scratch_metadata_server_shape:
+    title: "Metadata Server Compute Shape"
+    description: "Shape for storage server instances."
+    default: "VM.DenseIO2.8"
+    required: true
+    type: enum
+    enum:
+    - "VM.DenseIO2.8"
+    - "VM.DenseIO2.16"
+    - "VM.DenseIO2.24"
+    - "BM.DenseIO2.52"
+    - "BM.HPC2.36"
+    visible:
+      and:
+        - eq:
+          - ${fs_type}
+          - "Scratch"
+
+  persistent_metadata_server_shape:
+    title: "Metadata Server Compute Shape"
+    description: "Shape for storage server instances."
+    default: "VM.Standard2.8"
+    required: true
+    type: enum
+    enum:
+    - "VM.Standard2.1"
+    - "VM.Standard2.2"
+    - "VM.Standard2.4"
+    - "VM.Standard2.8"
+    - "VM.Standard2.16"
+    - "VM.Standard2.24"
+    - "BM.Standard2.52"
+    - "VM.Standard.E2.4"
+    - "VM.Standard.E2.8"
+    - "BM.Standard.E2.64"
+    visible:
+      and:
+        - eq:
+          - ${fs_type}
+          - "Persistent"
+
+  metadata_server_node_count:
+    title: "Number of metadata servers"
     description: "Number of metadata server instances."
     type: integer
-    default: 1
     minimum: 1
+    default: 1
     required: true
-  lustre_mdt_count:
-    title: "Number of MDT block volumes"
-    description: "Number of block volumes for each metadata server. On compute shapes with local NVMe SSD, it will create one filesystem using local nvme and another one using block volumes."
+
+  metadata_server_hostname_prefix:
+    type: string
+    required: true
+    default: "metadata-server-"
+    description: "Metadata server hostname prefix "
+    visible: false
+
+  metadata_server_disk_count:
+    title: "Number of block volumes (MDT)"
+    description: "Number of block volumes disks per metadata server. Block Volume are Durable and Highly Available."
     type: integer
     default: 1
     minimum: 1
-    maximum: 31
+    maximum: 32
     required: true
-  mdt_block_volume_size:
+    visible:
+      and:
+        - eq:
+          - ${fs_type}
+          - "Persistent"
+
+  metadata_server_disk_size:
     title: "Block volume size"
-    description: "Size in GB for each block volume attached to metadata server, min 50."
+    description: "Size in GB for each block volume attached to Metadata server, min 50."
     type: integer
-    default: 50
+    default: 400
     minimum: 50
     maximum: 32768
     required: true
-  enable_mdt_raid0:
-    description: "Set to true, if you want to do a RAID0 and create one MDT using all block volumes on metadata server, else set to false to attach each block volume disk as seperate MDTs."
+    visible:
+      and:
+        - eq:
+          - ${fs_type}
+          - "Persistent"
+
+  metadata_server_disk_perf_tier:
+    title: "Metadata Server Target Block volume performance"
+    description: "Block volume elastic performance tier.  See https://docs.cloud.oracle.com/en-us/iaas/Content/Block/Concepts/blockvolumeelasticperformance.htm for more information."
+    type: enum
+    enum:
+    - "Higher Performance"
+    - "Balanced"
+    - "Lower Cost"
+    required: true
+    default: "Higher Performance"
+    visible: false
+
+  scratch_storage_server_shape:
+    title: "Storage Server Compute Shape"
+    description: "Shape for storage server instances."
+    default: "BM.DenseIO2.52"
+    required: true
+    type: enum
+    enum:
+    - "VM.DenseIO2.8"
+    - "VM.DenseIO2.16"
+    - "VM.DenseIO2.24"
+    - "BM.DenseIO2.52"
+    - "BM.HPC2.36"
+    visible:
+      and:
+        - eq:
+          - ${fs_type}
+          - "Scratch"
+
+  persistent_storage_server_shape:
+    title: "Storage Server Compute Shape"
+    description: "Shape for storage server instances."
+    default: "BM.Standard2.52"
+    required: true
+    type: enum
+    enum:
+    - "VM.Standard2.1"
+    - "VM.Standard2.2"
+    - "VM.Standard2.4"
+    - "VM.Standard2.8"
+    - "VM.Standard2.16"
+    - "VM.Standard2.24"
+    - "BM.Standard2.52"
+    - "VM.Standard.E2.4"
+    - "VM.Standard.E2.8"
+    - "BM.Standard.E2.64"
+    visible:
+      and:
+        - eq:
+          - ${fs_type}
+          - "Persistent"
+
+  storage_server_node_count:
+    title: "Number of storage servers"
+    description: "Number of storage server instances."
+    type: integer
+    default: 2
+    minimum: 1
+    required: true
+    visible: true
+
+  storage_server_hostname_prefix:
     type: string
     required: true
-    default: "false"
-  lustre_oss_server_shape:
-    title: "Object Server Compute Shape"
-    description: "Shape for object server instances."
-    type: oci:core:instanceshape:name
-    default: "VM.Standard2.2"
+    default: "storage-server-"
+    description: "Storage server hostname prefix "
+    visible: false
+
+  storage_tier_1_disk_perf_tier:
+    title: "Block Volume Storage Performance tier"
+    description: "Select block volume storage performance tier based on your performance needs. See https://docs.cloud.oracle.com/en-us/iaas/Content/Block/Concepts/blockvolumeelasticperformance.htm for more information."
+    type: enum
+    enum:
+    - "Higher Performance"
+    - "Balanced"
+    - "Lower Cost"
     required: true
-    dependsOn:
-      compartmentId: ${compartment_ocid}
-      imageId: ${mp_listing_resource_id}
-  lustre_oss_count:
-    title: "Number of Object Servers"
-    description: "Number of object server instances."
+    default: "Higher Performance"
+    visible:
+      - eq:
+        - ${fs_type}
+        - "Persistent"
+
+  storage_tier_1_disk_count:
+    title: "Number of block volumes"
+    description: "Number of block volume disks per file server. Each attached as JBOD. Block Volumes are durable and highly available(HA)."
     type: integer
     default: 1
     minimum: 1
+    maximum: 32
     required: true
-  lustre_ost_count:
-    title: "Number of OST block volumes"
-    description: "Number of block volumes for each object server. On compute shapes with local NVMe SSD, it will create one filesystem using local nvme and another one using block volumes."
-    type: integer
-    default: 1
-    minimum: 1
-    maximum: 31
-    required: true
-  ost_block_volume_size:
+    visible:
+      - eq:
+        - ${fs_type}
+        - "Persistent"
+
+  storage_tier_1_disk_size:
     title: "Block volume size"
-    description: "Size in GB for each block volume attached to object server, min 50."
+    description: "Select size in GB for each block volume/disk, min 50."
     type: integer
-    default: 50
+    default: 1000
     minimum: 50
     maximum: 32768
     required: true
-  enable_ost_raid0:
-    description: "Set to true, if you want to do a RAID0 and create one OST using all block volumes on object server, else set to false to attach each block volume disk as seperate OSTs."
-    type: string
-    required: true
-    default: "false"
-  lustre_client_shape:
-    title: "Lustre Client Compute Shape"
+    visible:
+      - eq:
+        - ${fs_type}
+        - "Persistent"
+
+  create_compute_nodes:
+    type: boolean
+    title: "Create Compute Nodes - Optional"
+    description: "Select checkbox, if you want to create compute nodes to mount the filesystem"
+    required: false
+    default: false
+
+  client_node_shape:
+    title: "Client Compute Shape"
     description: "Shape for client instances."
     type: oci:core:instanceshape:name
-    default: "VM.Standard2.2"
-    required: false
+    default: "VM.Standard2.24"
+    required: true
+    visible: ${create_compute_nodes}
     dependsOn:
       compartmentId: ${compartment_ocid}
       imageId: ${mp_listing_resource_id}
-  lustre_client_count:
+
+  client_node_count:
     title: "Number of clients"
     description: "Number of client instances."
     type: integer
     default: 1
-    minimum: 0
-    required: false
+    visible: ${create_compute_nodes}
+    required: true
+
+  client_node_hostname_prefix:
+    title: "Client Node Hostname Prefix"
+    type: string
+    required: true
+    default: "client-"
+    description: "Client hostname prefix "
+    visible: false
+
+  fs_name:
+    title: "Filesystem Name"
+    type: enum
+    enum:
+    - "Lustre"
+    required: true
+    default: "Lustre"
+    description: "Select filesystem to deploy."
+    visible: false
+
+  fs_type:
+    title: "Filesystem Type"
+    type: enum
+    enum:
+    - "Scratch"
+    - "Persistent"
+    required: true
+    default: "Persistent"
+    description: "Select filesystem type to deploy. Scratch filesystem will use Compute shapes with local NVMe SSD disks. Persistent filesystem will use Standard Compute shapes with network attached Block Volume Storage.  Block volumes are highly durable, redundant and highly available."
+
+  fs_workload_type:
+    title: "Workload Type"
+    type: enum
+    enum:
+    - "Large Files"
+    - "Small Files"
+    - "Mixed"
+    required: true
+    default: "Large Files"
+    description: "Select Mixed, if your workload generates both small files and large files (> 10MiB) and you want to optimize filesystem for both.  Small Files (Random IO),  Large Files (Sequential IO). For large files, this template provisions by default one meta server using VM.DenseIO2.8 for scratch and VM.Standard2.8 + 1 x 400 High Performance Tier Block Volumes for persistent file system.  If you would like to customize the meta server configuration, then select Mixed. "
+    visible: true
+
+  stripe_size:
+    title: "Filesystem Stripe Size"
+    type: string
+    required: true
+    default: "1m"
+    description: "Default file stripe size (aka chunk_size) used by clients to stripe file data and send to desired number of storage targets (OSTs). Example: 1m, 512k, 2m, etc"
+    visible: false
+
+  mount_point:
+    title: "Filesystem Mount Point"
+    type: string
+    required: true
+    default: "/mnt/fs"
+    description: "Mount point on client instances for selected filesystem. "
+    visible: false
+
   ad_number:
     description: "Shadowed TF value to ignore"
     type: integer
     required: true
     default: -1
+
   scripts_directory:
     type: string
     required: true
     default: "script"
     description: "Folder which has all the scripts."
+
   ssh_user:
     type: string
     required: true
     default: "opc"
     description: "opc for OracleLinux & CentOS, ubuntu for Ubuntu OS."
+
   mp_listing_id:
     type: string
     required: true
     description: "Marketplace Listing ID"
+
   mp_listing_resource_id:
     type: oci:core:image:id
     required: true
@@ -220,4 +504,61 @@ variables:
     required: true
     description: "Marketplace Listing package version"
 
+  use_existing_vcn:
+    type: boolean
+    title: "Use Existing VCN"
+    description: "Select checkbox, to use existing VCN, otherwise new VCN, subnets and related resources will be created"
+    required: true
+    default: false
 
+  vpc_cidr:
+    title: "VPC CIDR"
+    description: "Network CIDR to use for VPC/VCN."
+    type: string
+    default: "10.0.0.0/16"
+    required: true
+    visible:
+      not:
+        - ${use_existing_vcn}
+
+  vcn_id:
+    type: oci:core:vcn:id
+    title: "Existing VCN"
+    description: "Select Existing VCN"
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+    visible: ${use_existing_vcn}
+    required: true
+
+  bastion_subnet_id:
+    type: oci:core:subnet:id
+    title: "Bastion Subnet"
+    description: "Select public subnet. Ensure the subnet is in the same Availability Domain selected above"
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+      vcnId: ${vcn_id}
+      hidePrivateSubnet: ${hide_private_subnet}
+    visible: ${use_existing_vcn}
+    required: true
+
+  storage_subnet_id:
+    type: oci:core:subnet:id
+    title: "Storage Subnet"
+    description: "Select private subnet to provision file servers (Storage/Metadata/Management servers).  This subnet to used to access Block Volmes storage. Ensure the subnet is in the same Availability Domain selected above"
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+      vcnId: ${vcn_id}
+      hidePublicSubnet: ${hide_public_subnet}
+    visible: ${use_existing_vcn}
+    required: true
+
+  fs_subnet_id:
+    type: oci:core:subnet:id
+    title: "Filesystem Subnet"
+    description: "Select private subnet to provision client nodes to mount filesystem. This subnet is used for file servers and client nodes to send and receive data. File servers (Storage/Metadata/Management servers) will use a secondary VNIC to connect with client nodes. Ensure the subnet is in the same Availability Domain selected above"
+    dependsOn:
+      compartmentId: ${compartment_ocid}
+      vcnId: ${vcn_id}
+      hidePublicSubnet: ${hide_public_subnet}
+    visible: ${use_existing_vcn}
+    required: true

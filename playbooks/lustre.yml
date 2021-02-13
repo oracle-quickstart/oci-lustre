@@ -1,0 +1,143 @@
+# tasks/hosts.yml
+
+- hosts: management
+  become: true
+  pre_tasks:
+   - setup:
+      gather_subset:
+        - '!all'
+        - '!any'
+        - 'network'
+  tasks:
+  - name: Disable SELinux
+    selinux:
+      state: disabled
+  - name: stop firewalld
+    service:
+      name: firewalld
+      state: stopped
+      enabled: no
+    async: 30
+    poll: 0
+  - name: create lustre_install_management.sh file
+    template:
+      src: _lustre_install_management.sh.j2
+      dest: /home/opc/lustre_install_management.sh
+  - name: execute lustre_install_management.sh
+    command: bash -c "chmod +x /home/opc/*.sh ; sudo /home/opc/lustre_install_management.sh"
+  - name: Reboot for kernel to be updated
+    reboot:
+      reboot_timeout: 3600
+  - name: create lustre_install_management_2.sh file
+    template:
+      src: _lustre_install_management_2.sh.j2
+      dest: /home/opc/lustre_install_management_2.sh
+  - name: execute lustre_install_management_2.sh
+    command: bash -c "chmod +x /home/opc/*.sh ; sudo /home/opc/lustre_install_management_2.sh"
+
+
+- hosts: metadata
+  become: true
+  pre_tasks:
+   - setup:
+      gather_subset:
+        - '!all'
+        - '!any'
+        - 'network'
+  tasks:
+  - name: Disable SELinux
+    selinux:
+      state: disabled
+  - name: stop firewalld
+    service:
+      name: firewalld
+      state: stopped
+      enabled: no
+    async: 30
+    poll: 0
+  - name: create lustre_install_metadata.sh file
+    template:
+      src: _lustre_install_metadata.sh.j2
+      dest: /home/opc/lustre_install_metadata.sh
+  - name: execute lustre_install_metadata.sh
+    command: bash -c "chmod +x /home/opc/*.sh ; sudo /home/opc/lustre_install_metadata.sh"
+  - name: Reboot for kernel to be updated
+    reboot:
+      reboot_timeout: 3600
+  - name: create lustre_install_metadata_2.sh file
+    template:
+      src: _lustre_install_metadata_2.sh.j2
+      dest: /home/opc/lustre_install_metadata_2.sh
+  - name: execute lustre_install_metadata_2.sh
+    command: bash -c "chmod +x /home/opc/*.sh ; sudo /home/opc/lustre_install_metadata_2.sh"
+
+- hosts: storage
+  become: true
+  pre_tasks:
+   - setup:
+      gather_subset:
+        - '!all'
+        - '!any'
+        - 'network'
+  tasks:
+  - name: Disable SELinux
+    selinux:
+      state: disabled
+  - name: stop firewalld
+    service:
+      name: firewalld
+      state: stopped
+      enabled: no
+    async: 30
+    poll: 0
+  - name: create lustre_install_storage.sh file
+    template:
+      src: _lustre_install_storage.sh.j2
+      dest: /home/opc/lustre_install_storage.sh
+  - name: execute lustre_install_storage.sh
+    command: bash -c "chmod +x /home/opc/*.sh ; sudo /home/opc/lustre_install_storage.sh"
+  - name: Reboot for kernel to be updated
+    reboot:
+      reboot_timeout: 3600
+  - name: create lustre_install_storage_2.sh file
+    template:
+      src: _lustre_install_storage_2.sh.j2
+      dest: /home/opc/lustre_install_storage_2.sh
+  - name: execute lustre_install_storage_2.sh
+    command: bash -c "chmod +x /home/opc/*.sh ; sudo /home/opc/lustre_install_storage_2.sh"
+
+- hosts: compute
+  become: true
+  pre_tasks:
+   - setup:
+      gather_subset:
+        - '!all'
+        - '!any'
+        - 'network'
+  tasks:
+  - name: Disable SELinux
+    selinux:
+      state: disabled
+  - name: stop firewalld
+    service:
+      name: firewalld
+      state: stopped
+      enabled: no
+    async: 30
+    poll: 0
+  - name: create lustre_install_client.sh file
+    template:
+      src: _lustre_install_client.sh.j2
+      dest: /home/opc/lustre_install_client.sh
+  - name: execute lustre_install_client.sh
+    command: bash -c "chmod +x /home/opc/*.sh ; sudo /home/opc/lustre_install_client.sh"
+  - name: Reboot for kernel to be updated
+    reboot:
+      reboot_timeout: 3600
+  - name: create lustre_install_client_2.sh file
+    template:
+      src: _lustre_install_client_2.sh.j2
+      dest: /home/opc/lustre_install_client_2.sh
+  - name: execute lustre_install_client_2.sh
+    command: bash -c "chmod +x /home/opc/*.sh ; sudo /home/opc/lustre_install_client_2.sh"
+
