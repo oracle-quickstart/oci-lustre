@@ -31,8 +31,6 @@ For details of the architecture, see [_Deploy a scalable, distributed file syste
 ## Deploy Using the Terraform CLI
 
 ### Clone the Module
-
-## Clone the Terraform template
 Now, you'll want a local copy of this repo.  You can make that with the commands:
 
     git clone https://github.com/oracle-quickstart/oci-lustre.git
