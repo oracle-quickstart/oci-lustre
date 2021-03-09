@@ -26,21 +26,27 @@ resource "oci_core_instance" "bastion" {
   compartment_id      = var.compartment_ocid
   shape               = var.bastion_shape
   display_name        = "${var.bastion_hostname_prefix}${format("%01d", count.index+1)}"
-  hostname_label      = "${var.bastion_hostname_prefix}${format("%01d", count.index+1)}"
+  
   metadata = {
-    ssh_authorized_keys = "${var.ssh_public_key}\n${tls_private_key.ssh.public_key_openssh}"
+    ssh_authorized_keys = tls_private_key.ssh.public_key_openssh
     user_data           = base64encode(data.template_file.bastion_config.rendered)
   }
+  
   source_details {
     source_id   = local.image_id
     source_type = "image"
   }
+  
   create_vnic_details {
-    subnet_id = local.bastion_subnet_id
+    subnet_id      = local.bastion_subnet_id
+    hostname_label = "${var.bastion_hostname_prefix}${format("%01d", count.index+1)}"
   }
+  
   launch_options {
     network_type = "VFIO"
   }
+
+  defined_tags = {"${oci_identity_tag_namespace.ArchitectureCenterTagNamespace.name}.${oci_identity_tag.ArchitectureCenterTag.name}" = var.release }
 
 
   provisioner "file" {
@@ -200,9 +206,13 @@ resource "oci_core_instance" "storage_server" {
   #fault_domain        = "FAULT-DOMAIN-${(count.index%3)+1}"
   compartment_id      = var.compartment_ocid
   display_name        = "${var.storage_server_hostname_prefix}${format("%01d", count.index+1)}"
-  hostname_label      = "${var.storage_server_hostname_prefix}${format("%01d", count.index+1)}"
   shape               = local.derived_storage_server_shape
-  subnet_id           = local.storage_subnet_id
+  
+  create_vnic_details {
+    subnet_id        = local.storage_subnet_id
+    assign_public_ip = false
+    hostname_label   = "${var.storage_server_hostname_prefix}${format("%01d", count.index+1)}"
+  }
 
   source_details {
     source_type = "image"
@@ -217,15 +227,16 @@ resource "oci_core_instance" "storage_server" {
     ssh_authorized_keys = join(
       "\n",
       [
-        var.ssh_public_key,
         tls_private_key.ssh.public_key_openssh
       ]
     )
-    user_data = "${base64encode(join("\n", list(
+    user_data = base64encode(join("\n", list(
         "#!/usr/bin/env bash",
         "set -x",
-      )))}"
+      )))
     }
+
+  defined_tags = {"${oci_identity_tag_namespace.ArchitectureCenterTagNamespace.name}.${oci_identity_tag.ArchitectureCenterTag.name}" = var.release }
 
   timeouts {
     create = "120m"
@@ -239,9 +250,13 @@ resource "oci_core_instance" "metadata_server" {
   #fault_domain        = "FAULT-DOMAIN-${(count.index%3)+1}"
   compartment_id      = var.compartment_ocid
   display_name        = "${var.metadata_server_hostname_prefix}${format("%01d", count.index+1)}"
-  hostname_label      = "${var.metadata_server_hostname_prefix}${format("%01d", count.index+1)}"
   shape               = local.derived_metadata_server_shape
-  subnet_id           = local.storage_subnet_id
+
+  create_vnic_details {
+    subnet_id        = local.storage_subnet_id
+    assign_public_ip = false
+    hostname_label   = "${var.metadata_server_hostname_prefix}${format("%01d", count.index+1)}"
+  }
 
   source_details {
     source_type = "image"
@@ -256,15 +271,16 @@ resource "oci_core_instance" "metadata_server" {
     ssh_authorized_keys = join(
       "\n",
       [
-        var.ssh_public_key,
         tls_private_key.ssh.public_key_openssh
       ]
     )
-    user_data = "${base64encode(join("\n", list(
+    user_data = base64encode(join("\n", list(
         "#!/usr/bin/env bash",
         "set -x",
-      )))}"
+      )))
     }
+
+  defined_tags = {"${oci_identity_tag_namespace.ArchitectureCenterTagNamespace.name}.${oci_identity_tag.ArchitectureCenterTag.name}" = var.release } 
 
   timeouts {
     create = "120m"
@@ -278,9 +294,13 @@ resource "oci_core_instance" "management_server" {
   #fault_domain        = "FAULT-DOMAIN-${(count.index%3)+1}"
   compartment_id      = var.compartment_ocid
   display_name        = "${var.management_server_hostname_prefix}${format("%01d", count.index+1)}"
-  hostname_label      = "${var.management_server_hostname_prefix}${format("%01d", count.index+1)}"
   shape               = var.management_server_shape
-  subnet_id           = local.storage_subnet_id
+
+  create_vnic_details {
+    subnet_id        = local.storage_subnet_id
+    assign_public_ip = false
+    hostname_label   = "${var.management_server_hostname_prefix}${format("%01d", count.index+1)}"
+  }
 
   source_details {
     source_type       = "image"
@@ -295,15 +315,16 @@ resource "oci_core_instance" "management_server" {
     ssh_authorized_keys = join(
       "\n",
       [
-        var.ssh_public_key,
         tls_private_key.ssh.public_key_openssh
       ]
     )
-    user_data = "${base64encode(join("\n", list(
+    user_data = base64encode(join("\n", list(
         "#!/usr/bin/env bash",
         "set -x",
-      )))}"
+      )))
     }
+  
+  defined_tags = {"${oci_identity_tag_namespace.ArchitectureCenterTagNamespace.name}.${oci_identity_tag.ArchitectureCenterTag.name}" = var.release }
 
   timeouts {
     create = "120m"
@@ -320,9 +341,13 @@ resource "oci_core_instance" "client_node" {
   #fault_domain        = "FAULT-DOMAIN-${(count.index%3)+1}"
   compartment_id      = var.compartment_ocid
   display_name        = "${var.client_node_hostname_prefix}${format("%01d", count.index+1)}"
-  hostname_label      = "${var.client_node_hostname_prefix}${format("%01d", count.index+1)}"
   shape               = var.client_node_shape
-  subnet_id           = local.client_subnet_id
+
+  create_vnic_details {
+    subnet_id        = local.client_subnet_id
+    assign_public_ip = false
+    hostname_label   = "${var.client_node_hostname_prefix}${format("%01d", count.index+1)}"
+  }
 
   source_details {
     source_type = "image"
@@ -337,16 +362,17 @@ resource "oci_core_instance" "client_node" {
     ssh_authorized_keys = join(
       "\n",
       [
-        var.ssh_public_key,
         tls_private_key.ssh.public_key_openssh
       ]
     )
-    user_data = "${base64encode(join("\n", list(
+    user_data = base64encode(join("\n", list(
         "#!/usr/bin/env bash",
         "set -x",
-      )))}"
+      )))
     }
 
+  defined_tags = {"${oci_identity_tag_namespace.ArchitectureCenterTagNamespace.name}.${oci_identity_tag.ArchitectureCenterTag.name}" = var.release }
+  
   timeouts {
     create = "120m"
   }
