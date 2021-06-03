@@ -21,6 +21,7 @@ groupings:
     - mp_listing_resource_version
     - use_marketplace_image
     - use_marketplace_image
+    - marketplace_source_images
     - release
 
   - title: "Lustre Filesystem Configuration"
