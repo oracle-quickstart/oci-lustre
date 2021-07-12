@@ -35,6 +35,9 @@ resource "oci_core_instance" "bastion" {
     source_id   = local.image_id
     source_type = "image"
   }
+  agent_config {
+    is_management_disabled = true
+  }
   create_vnic_details {
     subnet_id = local.bastion_subnet_id
   }
@@ -208,6 +211,9 @@ resource "oci_core_instance" "storage_server" {
     source_type = "image"
     source_id   = local.image_id
   }
+  agent_config {
+    is_management_disabled = true
+  }
 
   launch_options {
     network_type = "VFIO"
@@ -246,6 +252,9 @@ resource "oci_core_instance" "metadata_server" {
   source_details {
     source_type = "image"
     source_id   = local.image_id
+  }
+  agent_config {
+    is_management_disabled = true
   }
 
   launch_options {
@@ -286,7 +295,9 @@ resource "oci_core_instance" "management_server" {
     source_type       = "image"
     source_id         = local.image_id
   }
-
+  agent_config {
+    is_management_disabled = true
+  }
   launch_options {
     network_type = "VFIO"
   }
@@ -327,6 +338,9 @@ resource "oci_core_instance" "client_node" {
   source_details {
     source_type = "image"
     source_id   = local.image_id
+  }
+  agent_config {
+    is_management_disabled = true
   }
 
   launch_options {

@@ -127,7 +127,7 @@ locals {
 
 }
 
-
+/*
 variable "images" {
   type = map(string)
   default = {
@@ -140,12 +140,25 @@ variable "images" {
     us-phoenix-1   = "ocid1.image.oc1.phx.aaaaaaaaa2ph5vy4u7vktmf3c6zemhlncxkomvay2afrbw5vouptfbydwmtq"
   }
 }
-
+*/
 // See https://docs.cloud.oracle.com/en-us/iaas/images/image/0a72692a-bdbb-46fc-b17b-6e0a3fedeb23/
 // Oracle-provided image "Oracle-Linux-7.7-2020.01.28-0"
 // Kernel Version: 4.14.35-1902.10.4.el7uek.x86_64
+
+
+/* RHCK OL79 image
+  eu-frankfurt-1= "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaanwv3rcimife7nmc5fg76n5e5mrqi2npgbyd73vw3vzvgvfgbsaza"
+*/
+variable "images" {
+  type = "map"
+  default = {
+    eu-frankfurt-1 = "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaanwv3rcimife7nmc5fg76n5e5mrqi2npgbyd73vw3vzvgvfgbsaza"
+  }
+}
+
+
 /*
-variable "imagesOL" {
+variable "images" {
   type = "map"
   default = {
     ap-melbourne-1 = "ocid1.image.oc1.ap-melbourne-1.aaaaaaaa3fvafraincszwi36zv2oeangeitnnj7svuqjbm2agz3zxhzozadq"
