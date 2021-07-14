@@ -141,3 +141,11 @@
   - name: execute lustre_install_client_2.sh
     command: bash -c "chmod +x /home/opc/*.sh ; sudo /home/opc/lustre_install_client_2.sh"
 
+# for UEK support - requires rpms to be created first manually
+#  - name: create lustre_install_client_OL_UEK.sh file
+#    template:
+#      src: _lustre_install_client_OL_UEK.sh.j2
+#      dest: /home/opc/lustre_install_client_OL_UEK.sh
+#  - name: execute lustre_install_client_OL_UEK.sh
+#    command: bash -c "chmod +x /home/opc/*.sh ; sudo /home/opc/lustre_install_client_OL_UEK.sh"
+

@@ -11,6 +11,7 @@ resource "oci_core_virtual_network" "hfs" {
   compartment_id = var.compartment_ocid
   display_name   = "hfs"
   dns_label      = "hfs"
+  defined_tags = {"${oci_identity_tag_namespace.ArchitectureCenterTagNamespace.name}.${oci_identity_tag.ArchitectureCenterTag.name}" = var.release }
 }
 
 resource "oci_core_internet_gateway" "internet_gateway" {
@@ -29,6 +30,7 @@ resource "oci_core_route_table" "pubic_route_table" {
     cidr_block        = "0.0.0.0/0"
     network_entity_id = oci_core_internet_gateway.internet_gateway[0].id
   }
+  defined_tags = {"${oci_identity_tag_namespace.ArchitectureCenterTagNamespace.name}.${oci_identity_tag.ArchitectureCenterTag.name}" = var.release }
 }
 
 
@@ -37,6 +39,7 @@ resource "oci_core_nat_gateway" "nat_gateway" {
   compartment_id = var.compartment_ocid
   vcn_id         = oci_core_virtual_network.hfs[0].id
   display_name   = "nat_gateway"
+  defined_tags = {"${oci_identity_tag_namespace.ArchitectureCenterTagNamespace.name}.${oci_identity_tag.ArchitectureCenterTag.name}" = var.release }
 }
 
 
@@ -49,6 +52,7 @@ resource "oci_core_route_table" "private_route_table" {
     destination       = "0.0.0.0/0"
     network_entity_id = oci_core_nat_gateway.nat_gateway[0].id
   }
+  defined_tags = {"${oci_identity_tag_namespace.ArchitectureCenterTagNamespace.name}.${oci_identity_tag.ArchitectureCenterTag.name}" = var.release }
 }
 
 resource "oci_core_security_list" "public_security_list" {
@@ -70,6 +74,7 @@ resource "oci_core_security_list" "public_security_list" {
     protocol = "6"
     source   = "0.0.0.0/0"
   }
+  defined_tags = {"${oci_identity_tag_namespace.ArchitectureCenterTagNamespace.name}.${oci_identity_tag.ArchitectureCenterTag.name}" = var.release }
 }
 
 
@@ -88,6 +93,7 @@ resource "oci_core_security_list" "private_security_list" {
     protocol = "all"
     source   = var.vpc_cidr
   }
+  defined_tags = {"${oci_identity_tag_namespace.ArchitectureCenterTagNamespace.name}.${oci_identity_tag.ArchitectureCenterTag.name}" = var.release }
 }
 
 
@@ -102,6 +108,7 @@ resource "oci_core_subnet" "public" {
   security_list_ids = [oci_core_virtual_network.hfs[0].default_security_list_id, oci_core_security_list.public_security_list[0].id]
   dhcp_options_id   = oci_core_virtual_network.hfs[0].default_dhcp_options_id
   dns_label         = "public"
+  defined_tags = {"${oci_identity_tag_namespace.ArchitectureCenterTagNamespace.name}.${oci_identity_tag.ArchitectureCenterTag.name}" = var.release }
 }
 
 
@@ -117,6 +124,7 @@ resource "oci_core_subnet" "storage" {
   dhcp_options_id            = oci_core_virtual_network.hfs[0].default_dhcp_options_id
   prohibit_public_ip_on_vnic = true
   dns_label                  = "storage"
+  defined_tags = {"${oci_identity_tag_namespace.ArchitectureCenterTagNamespace.name}.${oci_identity_tag.ArchitectureCenterTag.name}" = var.release }
 }
 
 
@@ -131,4 +139,5 @@ resource "oci_core_subnet" "fs" {
   dhcp_options_id            = oci_core_virtual_network.hfs[0].default_dhcp_options_id
   prohibit_public_ip_on_vnic = true
   dns_label                  = "fs"
+  defined_tags = {"${oci_identity_tag_namespace.ArchitectureCenterTagNamespace.name}.${oci_identity_tag.ArchitectureCenterTag.name}" = var.release }
 }

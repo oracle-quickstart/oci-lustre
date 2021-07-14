@@ -12,6 +12,7 @@ resource "oci_core_volume" "metadata_blockvolume" {
   display_name        = "metadata${count.index % local.derived_metadata_server_node_count + 1}-target${count.index % local.derived_metadata_server_disk_count + 1}"
   size_in_gbs         = var.metadata_server_disk_size
   vpus_per_gb         = var.volume_type_vpus_per_gb_mapping[(var.metadata_server_disk_perf_tier)]
+  defined_tags = {"${oci_identity_tag_namespace.ArchitectureCenterTagNamespace.name}.${oci_identity_tag.ArchitectureCenterTag.name}" = var.release }
 }
 
 resource "oci_core_volume_attachment" "metadata_blockvolume_attach" {
@@ -82,6 +83,7 @@ resource "oci_core_volume" "management_blockvolume" {
   display_name        = "management${count.index % local.derived_management_server_node_count + 1}-target${count.index % local.derived_management_server_disk_count + 1}"
   size_in_gbs         = var.management_server_disk_size
   vpus_per_gb         = var.volume_type_vpus_per_gb_mapping[(var.management_server_disk_perf_tier)]
+  defined_tags = {"${oci_identity_tag_namespace.ArchitectureCenterTagNamespace.name}.${oci_identity_tag.ArchitectureCenterTag.name}" = var.release }
 }
 
 

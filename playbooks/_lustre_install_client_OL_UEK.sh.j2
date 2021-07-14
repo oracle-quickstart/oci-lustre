@@ -1,3 +1,7 @@
+#/bin/bash
+
+
+# This script is currently not executed by Terraform or Marketplace Stack. This should be used if you plan to run lustre client on a node with OracleLinux UEK operating system.  This requires lustre client rpms which are compiled against the same OracleLinux UEK kernel version.  Given below is one such version for reference.  Reach out to OCI HPC Team - pinkesh.valdria@oracle.com for more details on your project needs.   With this version, there is no need to reboot the node after installing lustre rpms. The lustre_install_client.sh (not this script) file when ran on an OL-UEK image, it will update the grub loader to switch to OL non-UEK version and does a reboot using ansible code.
 
 set -x
 

@@ -9,10 +9,13 @@ set -x
 
 function install_lustre {
 
+lustre_version=$1
+
+
 cat > /etc/yum.repos.d/lustre.repo << EOF
 [hpddLustreserver]
 name=CentOS- - Lustre
-baseurl=https://downloads.whamcloud.com/public/lustre/lustre-2.13.0/el7/server/
+baseurl=https://downloads.whamcloud.com/public/lustre/lustre-${lustre_version}/el7/server/
 gpgcheck=0
 
 [e2fsprogs]
@@ -22,7 +25,7 @@ gpgcheck=0
 
 [hpddLustreclient]
 name=CentOS- - Lustre
-baseurl=https://downloads.whamcloud.com/public/lustre/lustre-2.13.0/el7/client/
+baseurl=https://downloads.whamcloud.com/public/lustre/lustre-${lustre_version}/el7/client/
 gpgcheck=0
 EOF
 
@@ -42,7 +45,11 @@ fi
 # Ansible code has logic to update_resolvconf and lock the file to prevent updates
 
 
-install_lustre
+# use this, since this is minimum version to support clients with UEK kernel
+##install_lustre "2.13.0"
+# Use this for RHCK
+install_lustre "2.12.6"
+
 
 setenforce 0
 

@@ -12,6 +12,7 @@ resource "oci_core_volume" "storage_tier_blockvolume" {
 
   size_in_gbs         = var.storage_tier_1_disk_size
   vpus_per_gb         = var.volume_type_vpus_per_gb_mapping[(var.storage_tier_1_disk_perf_tier)]
+  defined_tags = {"${oci_identity_tag_namespace.ArchitectureCenterTagNamespace.name}.${oci_identity_tag.ArchitectureCenterTag.name}" = var.release }
 }
 
 

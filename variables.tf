@@ -3,6 +3,11 @@
 ## Defines variables and local values
 ###
 
+variable "release" {
+  description = "Reference Architecture Release (OCI Architecture Center)"
+  default     = "1.0"
+}
+
 variable "vpc_cidr" { default = "10.0.0.0/16" }
 
 /*
@@ -46,7 +51,7 @@ variable metadata_server_hostname_prefix { default = "metadata-server-" }
 
 
 # BeeGFS Stoarage/Object (OSS) Server nodes variables
-variable persistent_storage_server_shape { default = "VM.Standard2.52" }
+variable persistent_storage_server_shape { default = "VM.Standard2.24" }
 variable scratch_storage_server_shape { default = "VM.DenseIO2.24" }
 variable storage_server_node_count { default = 2 }
 variable storage_server_hostname_prefix { default = "storage-server-" }
@@ -94,36 +99,36 @@ variable "scripts_directory" { default = "scripts" }
 
 variable "tenancy_ocid" {}
 variable "region" {}
+variable "user_ocid" {default = ""}
+variable "fingerprint" {default = ""}
+variable "private_key_path" {default = ""}
+
 
 variable "compartment_ocid" {
   description = "Compartment where infrastructure resources will be created"
 }
-variable "ssh_public_key" {
-  description = "SSH Public Key"
-}
-
 
 variable "ssh_user" { default = "opc" }
 
 
 locals {
-  management_server_dual_nics = (length(regexall("^BM", var.management_server_shape)) > 0 ? true : false)
-  metadata_server_dual_nics = (length(regexall("^BM", local.derived_metadata_server_shape)) > 0 ? true : false)
-  storage_server_dual_nics = (length(regexall("^BM", local.derived_storage_server_shape)) > 0 ? true : false)
-  storage_server_hpc_shape = (length(regexall("HPC2", local.derived_storage_server_shape)) > 0 ? true : false)
-  metadata_server_hpc_shape = (length(regexall("HPC2", local.derived_metadata_server_shape)) > 0 ? true : false)
-  management_server_hpc_shape = (length(regexall("HPC2", var.management_server_shape)) > 0 ? true : false)
-  storage_subnet_domain_name="${data.oci_core_subnet.private_storage_subnet.dns_label}.${data.oci_core_vcn.hfs.dns_label}.oraclevcn.com"
-  filesystem_subnet_domain_name="${data.oci_core_subnet.private_fs_subnet.dns_label}.${data.oci_core_vcn.hfs.dns_label}.oraclevcn.com"
-  vcn_domain_name="${data.oci_core_vcn.hfs.dns_label}.oraclevcn.com"
-  management_server_filesystem_vnic_hostname_prefix = "${var.management_server_hostname_prefix}fs-vnic-"
-  metadata_server_filesystem_vnic_hostname_prefix = "${var.metadata_server_hostname_prefix}fs-vnic-"
-  storage_server_filesystem_vnic_hostname_prefix = "${var.storage_server_hostname_prefix}fs-vnic-"
+  management_server_dual_nics                       = (length(regexall("^BM", var.management_server_shape)) > 0 ? true : false)
+  metadata_server_dual_nics                         = (length(regexall("^BM", local.derived_metadata_server_shape)) > 0 ? true : false)
+  storage_server_dual_nics                          = (length(regexall("^BM", local.derived_storage_server_shape)) > 0 ? true : false)
+  storage_server_hpc_shape                          = (length(regexall("HPC2", local.derived_storage_server_shape)) > 0 ? true : false)
+  metadata_server_hpc_shape                         = (length(regexall("HPC2", local.derived_metadata_server_shape)) > 0 ? true : false)
+  management_server_hpc_shape                       = (length(regexall("HPC2", var.management_server_shape)) > 0 ? true : false)
+  storage_subnet_domain_name                        = join("",[data.oci_core_subnet.private_storage_subnet.dns_label,".",data.oci_core_vcn.hfs.dns_label,".oraclevcn.com"])
+  filesystem_subnet_domain_name                     = join("",[data.oci_core_subnet.private_fs_subnet.dns_label,".",data.oci_core_vcn.hfs.dns_label,".oraclevcn.com"])
+  vcn_domain_name                                   = join("",[data.oci_core_vcn.hfs.dns_label,".oraclevcn.com"])
+  management_server_filesystem_vnic_hostname_prefix = join("",[var.management_server_hostname_prefix,"fs-vnic-"])
+  metadata_server_filesystem_vnic_hostname_prefix   = join("",[var.metadata_server_hostname_prefix,"fs-vnic-"])
+  storage_server_filesystem_vnic_hostname_prefix    = join("",[var.storage_server_hostname_prefix,"fs-vnic-"])
 
   # If ad_number is non-negative use it for AD lookup, else use ad_name.
   # Allows for use of ad_number in TF deploys, and ad_name in ORM.
   # Use of max() prevents out of index lookup call.
-  ad = "${var.ad_number >= 0 ? lookup(data.oci_identity_availability_domains.availability_domains.availability_domains[max(0,var.ad_number)],"name") : var.ad_name}"
+  ad = var.ad_number >= 0 ? lookup(data.oci_identity_availability_domains.availability_domains.availability_domains[max(0,var.ad_number)],"name") : var.ad_name
 
 }
 
@@ -153,6 +158,7 @@ variable "images" {
   type = "map"
   default = {
     eu-frankfurt-1 = "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaanwv3rcimife7nmc5fg76n5e5mrqi2npgbyd73vw3vzvgvfgbsaza"
+    us-ashburn-1 = "ocid1.image.oc1.iad.aaaaaaaayi5p6rjcnrarhfuthvpiun6fddvgpvpjqfejkc72drtwbfpftugq"
   }
 }
 

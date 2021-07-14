@@ -11,7 +11,7 @@ function enable_lnet_at_boot_time {
 
   sed -i "s|$search_string|#$search_string\n$nic_add|g" $lnet_service_config
   # To comment ConditionPathExists clause
-  sed -i "s|ConditionPathExists=!/proc/sys/lnet/|#ConditionPathExists=!/proc/sys/lnet/|g" $lnet_service_config
+  sed -i "s|ConditionPathExists=\!/proc/sys/lnet/|#ConditionPathExists=\!/proc/sys/lnet/|g" $lnet_service_config
 
   systemctl status lnet
   systemctl enable lnet
@@ -89,7 +89,7 @@ done
 cp /etc/fstab /etc/fstab.backup
 echo "${mgs_ip}@tcp1:/$fsname  $mount_point lustre defaults,_netdev,x-systemd.automount,x-systemd.requires=lnet.service 0 0" >> /etc/fstab
 
-sudo chown -R opc:opc /mnt/fs_$disk_type
+sudo chown -R opc:opc $mount_point
 
 df -h
 

@@ -8,10 +8,12 @@ set -x
 
 function install_lustre {
 
+lustre_version=$1
+
 cat > /etc/yum.repos.d/lustre.repo << EOF
 [hpddLustreserver]
 name=CentOS- - Lustre
-baseurl=https://downloads.whamcloud.com/public/lustre/lustre-2.13.0/el7/server/
+baseurl=https://downloads.whamcloud.com/public/lustre/lustre-${lustre_version}/el7/server/
 gpgcheck=0
 
 [e2fsprogs]
@@ -21,7 +23,7 @@ gpgcheck=0
 
 [hpddLustreclient]
 name=CentOS- - Lustre
-baseurl=https://downloads.whamcloud.com/public/lustre/lustre-2.13.0/el7/client/
+baseurl=https://downloads.whamcloud.com/public/lustre/lustre-${lustre_version}/el7/client/
 gpgcheck=0
 EOF
 
@@ -40,7 +42,12 @@ fi
 ## Start #
 ##########
 
-install_lustre
+# use this, since this is minimum version to support clients with UEK kernel
+##install_lustre "2.13.0"
+# Use this for RHCK
+install_lustre "2.12.6"
+
+
 
 setenforce 0
 
@@ -70,6 +77,7 @@ os_with_lustre=`awk -F\' /^menuentry/{print\$2}  $grub_config | egrep -v "Rescue
 #grub2-set-default "'"$os_with_lustre"'"
 grub2-set-default "${os_with_lustre}"
 
+# for OL79-RHCK, observation: there is no new kernel created for clients which has "lustre.x...." in their name.  I assume reboot is still needed until its tested and verified that its not needed.
 
 
 touch /tmp/complete
