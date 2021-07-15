@@ -245,12 +245,11 @@ variable "volume_type_vpus_per_gb_mapping" {
   }
 }
 
-
+/*
 #-------------------------------------------------------------------------------------------------------------
 # Marketplace variables
 # hpc-filesystem-BeeGFS-OL77_3.10.0-1062.9.1.el7.x86_64
 # ------------------------------------------------------------------------------------------------------------
-
 variable "mp_listing_id" {
   default = "ocid1.appcataloglisting.oc1..aaaaaaaajmdokvtzailtlchqxk7nai45fxar6em7dfbdibxmspjsvs4uz3uq"
 }
@@ -264,8 +263,32 @@ variable "mp_listing_resource_version" {
 variable "use_marketplace_image" {
   default = true
 }
-
 # ------------------------------------------------------------------------------------------------------------
+*/
+
+
+
+
+#-------------------------------------------------------------------------------------------------------------
+# Marketplace variables
+# Oracle Linux RHCK 7.9 Image for HPC filesystem
+# hpc-filesystem-Oracle-Linux-7.9-2021.04.09-0-K3.10.0-1160.21.1.el7.x86_64-noselinux
+# ------------------------------------------------------------------------------------------------------------
+
+variable "mp_listing_id" {
+  default = "ocid1.appcataloglisting.oc1..aaaaaaaa566vc2hugxw2ia2d5bj46a23wul5sk45aka3qs22d5qyjc7ifzja"
+}
+variable "mp_listing_resource_id" {
+  default = "ocid1.image.oc1..aaaaaaaaxu7ah2adlodko6plfg72yqwaxafiz3wpzmhlcpvpyuen4mrqs6cq"
+}
+variable "mp_listing_resource_version" {
+  default = "1.0"
+}
+variable "use_marketplace_image" {
+  default = true
+}
+
+
 
 
 
