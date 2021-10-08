@@ -91,13 +91,17 @@ module "oci-lustre" {
   region                        = "<oci_region>"
   compartment_ocid              = "<compartment_ocid>"
   ad_number                     = 0
-  use_existing_vcn              = true # You can inject your own VCN and subnet 
+  use_existing_vcn              = true # You can inject your own VCN and subnets 
   vcn_id                        = oci_core_virtual_network.my_vcn.id
   bastion_subnet_id             = oci_core_subnet.my_pub_subnet.id
   storage_subnet_id             = oci_core_subnet.my_priv_storage_subnet.id
   fs_subnet_id                  = oci_core_subnet.my_priv_fs_subnet.id
 }
 ```
+
+For the module's usage check the code examples below:
+* [Usage of the existing network](examples/remote-module-existing-network) deploys the configuration with the VCN and Subnets provisioned outside of the module and injected into module
+* [Network provisioned by the module](examples/remote-module-no-existing-network) deploys the configuration including VCN and Subnets.
 
 ## Architecture Diagram
 
