@@ -30,7 +30,7 @@ For details of the architecture, see [_Deploy a scalable, distributed file syste
 
 ## Deploy Using the Terraform CLI
 
-### Clone the Module
+### Clone the Repository
 Now, you'll want a local copy of this repo.  You can make that with the commands:
 
     git clone https://github.com/oracle-quickstart/oci-lustre.git
@@ -77,6 +77,27 @@ Run the following commands:
 When you no longer need the deployment, you can run this command to destroy the resources:
 
     terraform destroy
+
+## Deploy as a Module
+It's possible to utilize this repository as remote module, providing the necessary inputs:
+
+```
+module "oci-lustre" {
+  source                        = "github.com/oracle-quickstart/oci-lustre"
+  tenancy_ocid                  = "<tenancy_ocid>"
+  user_ocid                     = "<user_ocid>"
+  fingerprint                   = "<finger_print>"
+  private_key_path              = "<private_key_path>"
+  region                        = "<oci_region>"
+  compartment_ocid              = "<compartment_ocid>"
+  ad_number                     = 0
+  use_existing_vcn              = true # You can inject your own VCN and subnet 
+  vcn_id                        = oci_core_virtual_network.my_vcn.id
+  bastion_subnet_id             = oci_core_subnet.my_pub_subnet.id
+  storage_subnet_id             = oci_core_subnet.my_priv_storage_subnet.id
+  fs_subnet_id                  = oci_core_subnet.my_priv_fs_subnet.id
+}
+```
 
 ## Architecture Diagram
 
