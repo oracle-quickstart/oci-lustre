@@ -1,9 +1,5 @@
-
-/*
-Copyright © 2020, Oracle and/or its affiliates. All rights reserved.
-The Universal Permissive License (UPL), Version 1.0
-*/
-
+## Copyright © 2021, Oracle and/or its affiliates. 
+## All rights reserved. The Universal Permissive License (UPL), Version 1.0 as shown at http://oss.oracle.com/licenses/upl
 
 resource "oci_core_volume" "metadata_blockvolume" {
   count               = local.derived_metadata_server_node_count * local.derived_metadata_server_disk_count
@@ -12,12 +8,12 @@ resource "oci_core_volume" "metadata_blockvolume" {
   display_name        = "metadata${count.index % local.derived_metadata_server_node_count + 1}-target${count.index % local.derived_metadata_server_disk_count + 1}"
   size_in_gbs         = var.metadata_server_disk_size
   vpus_per_gb         = var.volume_type_vpus_per_gb_mapping[(var.metadata_server_disk_perf_tier)]
-  defined_tags = {"${oci_identity_tag_namespace.ArchitectureCenterTagNamespace.name}.${oci_identity_tag.ArchitectureCenterTag.name}" = var.release }
+  defined_tags        = { "${oci_identity_tag_namespace.ArchitectureCenterTagNamespace.name}.${oci_identity_tag.ArchitectureCenterTag.name}" = var.release }
 }
 
 resource "oci_core_volume_attachment" "metadata_blockvolume_attach" {
   attachment_type = "iscsi"
-  count = (local.derived_metadata_server_node_count * local.derived_metadata_server_disk_count)
+  count           = (local.derived_metadata_server_node_count * local.derived_metadata_server_disk_count)
   instance_id = element(
     oci_core_instance.metadata_server.*.id,
     count.index % local.derived_metadata_server_node_count,
@@ -28,7 +24,7 @@ resource "oci_core_volume_attachment" "metadata_blockvolume_attach" {
     connection {
       agent   = false
       timeout = "30m"
-      host    = element(
+      host = element(
         oci_core_instance.metadata_server.*.private_ip,
         count.index % local.derived_metadata_server_node_count,
       )
@@ -54,19 +50,19 @@ resource "oci_core_volume_attachment" "metadata_blockvolume_attach" {
 */
 
 resource "null_resource" "notify_metadata_server_nodes_block_attach_complete" {
-  depends_on = [ oci_core_volume_attachment.metadata_blockvolume_attach ]
+  depends_on = [oci_core_volume_attachment.metadata_blockvolume_attach]
   count      = local.derived_metadata_server_node_count
   provisioner "remote-exec" {
     connection {
-        agent               = false
-        timeout             = "30m"
-        host                = element(oci_core_instance.metadata_server.*.private_ip, count.index)
-        user                = var.ssh_user
-        private_key         = tls_private_key.ssh.private_key_pem
-        bastion_host        = oci_core_instance.bastion.*.public_ip[0]
-        bastion_port        = "22"
-        bastion_user        = var.ssh_user
-        bastion_private_key = tls_private_key.ssh.private_key_pem
+      agent               = false
+      timeout             = "30m"
+      host                = element(oci_core_instance.metadata_server.*.private_ip, count.index)
+      user                = var.ssh_user
+      private_key         = tls_private_key.ssh.private_key_pem
+      bastion_host        = oci_core_instance.bastion.*.public_ip[0]
+      bastion_port        = "22"
+      bastion_user        = var.ssh_user
+      bastion_private_key = tls_private_key.ssh.private_key_pem
     }
     inline = [
       "set -x",
@@ -83,24 +79,24 @@ resource "oci_core_volume" "management_blockvolume" {
   display_name        = "management${count.index % local.derived_management_server_node_count + 1}-target${count.index % local.derived_management_server_disk_count + 1}"
   size_in_gbs         = var.management_server_disk_size
   vpus_per_gb         = var.volume_type_vpus_per_gb_mapping[(var.management_server_disk_perf_tier)]
-  defined_tags = {"${oci_identity_tag_namespace.ArchitectureCenterTagNamespace.name}.${oci_identity_tag.ArchitectureCenterTag.name}" = var.release }
+  defined_tags        = { "${oci_identity_tag_namespace.ArchitectureCenterTagNamespace.name}.${oci_identity_tag.ArchitectureCenterTag.name}" = var.release }
 }
 
 
 resource "oci_core_volume_attachment" "management_blockvolume_attach" {
   attachment_type = "iscsi"
   count           = (local.derived_management_server_node_count * local.derived_management_server_disk_count)
-  instance_id     = element(
+  instance_id = element(
     oci_core_instance.management_server.*.id,
     count.index % local.derived_management_server_node_count,
   )
-  volume_id        = element(oci_core_volume.management_blockvolume.*.id, count.index)
+  volume_id = element(oci_core_volume.management_blockvolume.*.id, count.index)
 
   provisioner "remote-exec" {
     connection {
       agent   = false
       timeout = "30m"
-      host    = element(
+      host = element(
         oci_core_instance.management_server.*.private_ip,
         count.index % local.derived_management_server_node_count,
       )
@@ -126,19 +122,19 @@ resource "oci_core_volume_attachment" "management_blockvolume_attach" {
 */
 
 resource "null_resource" "notify_management_server_nodes_block_attach_complete" {
-  depends_on = [ oci_core_volume_attachment.management_blockvolume_attach ]
+  depends_on = [oci_core_volume_attachment.management_blockvolume_attach]
   count      = local.derived_management_server_node_count
   provisioner "remote-exec" {
     connection {
-        agent               = false
-        timeout             = "30m"
-        host                = element(oci_core_instance.management_server.*.private_ip, count.index)
-        user                = var.ssh_user
-        private_key         = tls_private_key.ssh.private_key_pem
-        bastion_host        = oci_core_instance.bastion.*.public_ip[0]
-        bastion_port        = "22"
-        bastion_user        = var.ssh_user
-        bastion_private_key = tls_private_key.ssh.private_key_pem
+      agent               = false
+      timeout             = "30m"
+      host                = element(oci_core_instance.management_server.*.private_ip, count.index)
+      user                = var.ssh_user
+      private_key         = tls_private_key.ssh.private_key_pem
+      bastion_host        = oci_core_instance.bastion.*.public_ip[0]
+      bastion_port        = "22"
+      bastion_user        = var.ssh_user
+      bastion_private_key = tls_private_key.ssh.private_key_pem
     }
     inline = [
       "set -x",

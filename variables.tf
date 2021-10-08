@@ -1,11 +1,9 @@
-###
-## Variables.tf for Terraform
-## Defines variables and local values
-###
+## Copyright © 2021, Oracle and/or its affiliates. 
+## All rights reserved. The Universal Permissive License (UPL), Version 1.0 as shown at http://oss.oracle.com/licenses/upl
 
 variable "release" {
   description = "Reference Architecture Release (OCI Architecture Center)"
-  default     = "1.0"
+  default     = "1.1"
 }
 
 variable "vpc_cidr" { default = "10.0.0.0/16" }
@@ -20,53 +18,63 @@ variable "fs_type" { default = "Persistent" }
 variable "fs_workload_type" { default = "Large Files" }
 
 
-variable bastion_shape { default = "VM.Standard2.1" }
-variable bastion_node_count { default = 1 }
-variable bastion_hostname_prefix { default = "bastion-" }
+variable "bastion_shape" { default = "VM.Standard2.1" }
+variable "bastion_flex_shape_ocpus" { default = 1 }
+variable "bastion_flex_shape_mem" { default = 1 }
+variable "bastion_node_count" { default = 1 }
+variable "bastion_hostname_prefix" { default = "bastion-" }
 
 
 # DO NOT CHANGE - Management Server settings. If required, you can change shape to another Standard Compute shape.  
 # Management (MGS) Server nodes variables VM.Standard2.1 / VM.DenseIO2.8
-variable management_server_shape { default = "VM.Standard2.1" }
-variable management_server_node_count { default = 1 }
-variable management_server_disk_count { default = 1 }
-variable management_server_disk_size { default = 50 }
+variable "management_server_shape" { default = "VM.Standard2.1" }
+variable "management_server_flex_shape_ocpus" { default = 2 }
+variable "management_server_flex_shape_mem" { default = 15 }
+variable "management_server_node_count" { default = 1 }
+variable "management_server_disk_count" { default = 1 }
+variable "management_server_disk_size" { default = 50 }
 # Block volume elastic performance tier. See https://docs.cloud.oracle.com/en-us/iaas/Content/Block/Concepts/blockvolumeelasticperformance.htm for more information.
-variable management_server_disk_perf_tier { default = "Balanced" }
-variable management_server_hostname_prefix { default = "mgs-server-" }
+variable "management_server_disk_perf_tier" { default = "Balanced" }
+variable "management_server_hostname_prefix" { default = "mgs-server-" }
 
 
 
 # BeeGFS Metadata (MDS) Server nodes variables
-variable persistent_metadata_server_shape { default = "VM.Standard2.8" }
-variable scratch_metadata_server_shape { default = "VM.DenseIO2.8" }
-variable metadata_server_node_count { default = 1 }
+variable "persistent_metadata_server_shape" { default = "VM.Standard2.8" }
+variable "persistent_metadata_server_flex_shape_ocpus" { default = 8 }
+variable "persistent_metadata_server_flex_shape_mem" { default = 120 }
+variable "scratch_metadata_server_shape" { default = "VM.DenseIO2.8" }
+variable "metadata_server_node_count" { default = 1 }
 # if disk_count > 1, then it create multiple MDS instance, each with 1 disk as MDT for optimal performance. If node has both local nvme ssd and block storage, block storage volumes will be ignored.
-variable metadata_server_disk_count { default = 1 }
-variable metadata_server_disk_size { default = 400 }
+variable "metadata_server_disk_count" { default = 1 }
+variable "metadata_server_disk_size" { default = 400 }
 # Block volume elastic performance tier. See https://docs.cloud.oracle.com/en-us/iaas/Content/Block/Concepts/blockvolumeelasticperformance.htm for more information.
-variable metadata_server_disk_perf_tier { default = "Higher Performance" }
-variable metadata_server_hostname_prefix { default = "metadata-server-" }
+variable "metadata_server_disk_perf_tier" { default = "Higher Performance" }
+variable "metadata_server_hostname_prefix" { default = "metadata-server-" }
 
 
 
 # BeeGFS Stoarage/Object (OSS) Server nodes variables
-variable persistent_storage_server_shape { default = "VM.Standard2.24" }
-variable scratch_storage_server_shape { default = "VM.DenseIO2.24" }
-variable storage_server_node_count { default = 2 }
-variable storage_server_hostname_prefix { default = "storage-server-" }
+variable "persistent_storage_server_shape" { default = "VM.Standard2.24" }
+variable "persistent_storage_server_flex_shape_ocpus" { default = 24 }
+variable "persistent_storage_server_flex_shape_mem" { default = 320 }
+variable "scratch_storage_server_shape" { default = "VM.DenseIO2.24" }
+variable "storage_server_node_count" { default = 2 }
+variable "storage_server_hostname_prefix" { default = "storage-server-" }
 
 # Client nodes variables
-variable client_node_shape { default = "VM.Standard2.4" }
-variable client_node_count { default = 1 }
-variable client_node_hostname_prefix { default = "client-" }
+variable "client_node_shape" { default = "VM.Standard2.4" }
+variable "client_node_flex_shape_ocpus" { default = 4 }
+variable "client_node_flex_shape_mem" { default = 60 }
+variable "client_node_count" { default = 1 }
+variable "client_node_hostname_prefix" { default = "client-" }
 
 
 
 # FS related variables
 # Default file stripe size (aka chunk_size) used by clients to striping file data and send to desired number of storage targets (OSTs). Example: 1m, 512k, 2m, etc
-variable stripe_size { default = "1m" }
-variable mount_point { default = "/mnt/fs" }
+variable "stripe_size" { default = "1m" }
+variable "mount_point" { default = "/mnt/fs" }
 
 
 # This is currently used for the deployment.  
@@ -76,17 +84,17 @@ variable "ad_number" {
 
 
 variable "storage_tier_1_disk_perf_tier" {
-  default = "Higher Performance"
+  default     = "Higher Performance"
   description = "Select block volume storage performance tier based on your performance needs. Valid values are Higher Performance, Balanced, Lower Cost"
 }
 
 variable "storage_tier_1_disk_count" {
-  default = "6"
+  default     = "6"
   description = "Number of block volume disk per file server. Each attached as JBOD (no RAID)."
 }
 
 variable "storage_tier_1_disk_size" {
-  default = "800"
+  default     = "800"
   description = "Select size in GB for each block volume/disk, min 50."
 }
 
@@ -99,9 +107,9 @@ variable "scripts_directory" { default = "scripts" }
 
 variable "tenancy_ocid" {}
 variable "region" {}
-variable "user_ocid" {default = ""}
-variable "fingerprint" {default = ""}
-variable "private_key_path" {default = ""}
+#variable "user_ocid" { default = "" }
+#variable "fingerprint" { default = "" }
+#variable "private_key_path" { default = "" }
 
 
 variable "compartment_ocid" {
@@ -118,17 +126,17 @@ locals {
   storage_server_hpc_shape                          = (length(regexall("HPC2", local.derived_storage_server_shape)) > 0 ? true : false)
   metadata_server_hpc_shape                         = (length(regexall("HPC2", local.derived_metadata_server_shape)) > 0 ? true : false)
   management_server_hpc_shape                       = (length(regexall("HPC2", var.management_server_shape)) > 0 ? true : false)
-  storage_subnet_domain_name                        = join("",[data.oci_core_subnet.private_storage_subnet.dns_label,".",data.oci_core_vcn.hfs.dns_label,".oraclevcn.com"])
-  filesystem_subnet_domain_name                     = join("",[data.oci_core_subnet.private_fs_subnet.dns_label,".",data.oci_core_vcn.hfs.dns_label,".oraclevcn.com"])
-  vcn_domain_name                                   = join("",[data.oci_core_vcn.hfs.dns_label,".oraclevcn.com"])
-  management_server_filesystem_vnic_hostname_prefix = join("",[var.management_server_hostname_prefix,"fs-vnic-"])
-  metadata_server_filesystem_vnic_hostname_prefix   = join("",[var.metadata_server_hostname_prefix,"fs-vnic-"])
-  storage_server_filesystem_vnic_hostname_prefix    = join("",[var.storage_server_hostname_prefix,"fs-vnic-"])
+  storage_subnet_domain_name                        = join("", [data.oci_core_subnet.private_storage_subnet.dns_label, ".", data.oci_core_vcn.hfs.dns_label, ".oraclevcn.com"])
+  filesystem_subnet_domain_name                     = join("", [data.oci_core_subnet.private_fs_subnet.dns_label, ".", data.oci_core_vcn.hfs.dns_label, ".oraclevcn.com"])
+  vcn_domain_name                                   = join("", [data.oci_core_vcn.hfs.dns_label, ".oraclevcn.com"])
+  management_server_filesystem_vnic_hostname_prefix = join("", [var.management_server_hostname_prefix, "fs-vnic-"])
+  metadata_server_filesystem_vnic_hostname_prefix   = join("", [var.metadata_server_hostname_prefix, "fs-vnic-"])
+  storage_server_filesystem_vnic_hostname_prefix    = join("", [var.storage_server_hostname_prefix, "fs-vnic-"])
 
   # If ad_number is non-negative use it for AD lookup, else use ad_name.
   # Allows for use of ad_number in TF deploys, and ad_name in ORM.
   # Use of max() prevents out of index lookup call.
-  ad = var.ad_number >= 0 ? lookup(data.oci_identity_availability_domains.availability_domains.availability_domains[max(0,var.ad_number)],"name") : var.ad_name
+  ad = var.ad_number >= 0 ? lookup(data.oci_identity_availability_domains.availability_domains.availability_domains[max(0, var.ad_number)], "name") : var.ad_name
 
 }
 
@@ -154,6 +162,8 @@ variable "images" {
 /* RHCK OL79 image
   eu-frankfurt-1= "ocid1.image.oc1.eu-frankfurt-1.aaaaaaaanwv3rcimife7nmc5fg76n5e5mrqi2npgbyd73vw3vzvgvfgbsaza"
 */
+
+/*gg
 variable "images" {
   type = "map"
   default = {
@@ -161,7 +171,7 @@ variable "images" {
     us-ashburn-1 = "ocid1.image.oc1.iad.aaaaaaaayi5p6rjcnrarhfuthvpiun6fddvgpvpjqfejkc72drtwbfpftugq"
   }
 }
-
+gg*/
 
 /*
 variable "images" {
@@ -200,16 +210,16 @@ variable "ad_name" {
 variable "volume_attach_device_mapping" {
   type = map(string)
   default = {
-    "0" = "/dev/oracleoci/oraclevdb"
-    "1" = "/dev/oracleoci/oraclevdc"
-    "2" = "/dev/oracleoci/oraclevdd"
-    "3" = "/dev/oracleoci/oraclevde"
-    "4" = "/dev/oracleoci/oraclevdf"
-    "5" = "/dev/oracleoci/oraclevdg"
-    "6" = "/dev/oracleoci/oraclevdh"
-    "7" = "/dev/oracleoci/oraclevdi"
-    "8" = "/dev/oracleoci/oraclevdj"
-    "9" = "/dev/oracleoci/oraclevdk"
+    "0"  = "/dev/oracleoci/oraclevdb"
+    "1"  = "/dev/oracleoci/oraclevdc"
+    "2"  = "/dev/oracleoci/oraclevdd"
+    "3"  = "/dev/oracleoci/oraclevde"
+    "4"  = "/dev/oracleoci/oraclevdf"
+    "5"  = "/dev/oracleoci/oraclevdg"
+    "6"  = "/dev/oracleoci/oraclevdh"
+    "7"  = "/dev/oracleoci/oraclevdi"
+    "8"  = "/dev/oracleoci/oraclevdj"
+    "9"  = "/dev/oracleoci/oraclevdk"
     "10" = "/dev/oracleoci/oraclevdl"
     "11" = "/dev/oracleoci/oraclevdm"
     "12" = "/dev/oracleoci/oraclevdn"
@@ -239,9 +249,9 @@ variable "volume_type_vpus_per_gb_mapping" {
   type = map(string)
   default = {
     "Higher Performance" = "20"
-    "Balanced" = "10"
-    "Lower Cost" = "0"
-    "None" = "-1"
+    "Balanced"           = "10"
+    "Lower Cost"         = "0"
+    "None"               = "-1"
   }
 }
 
@@ -317,5 +327,14 @@ variable "create_compute_nodes" {
 }
 
 
+# OS Images  CentOS 7.x
+variable "instance_os" {
+  description = "Operating system for compute instances"
+  default     = "Oracle Linux"
+}
 
+variable "linux_os_version" {
+  description = "Operating system version for all Linux instances"
+  default     = "7.9"
+}
 
